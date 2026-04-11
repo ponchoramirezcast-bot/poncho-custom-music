@@ -67,7 +67,7 @@ function showDashboard() {
 /* ---- Load pedidos ---------------------------------------- */
 async function loadPedidos() {
   const tbody = document.getElementById('pedidosTbody');
-  tbody.innerHTML = `<tr><td colspan="11" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="12" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>`;
 
   try {
     const { data, error } = await sb
@@ -83,7 +83,7 @@ async function loadPedidos() {
 
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = `<tr><td colspan="11" class="no-pedidos" style="color:var(--neon-pink)">Error al cargar pedidos.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="no-pedidos" style="color:var(--neon-pink)">Error al cargar pedidos.</td></tr>`;
     showToast('Error al cargar pedidos.', 'error');
   }
 }
@@ -104,13 +104,14 @@ function renderTable(tab) {
   const list  = tab === 'all' ? allPedidos : allPedidos.filter(p => p.estado === tab);
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="11" class="no-pedidos">No hay pedidos${tab !== 'all' ? ` con estado "${tab}"` : ''}.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="no-pedidos">No hay pedidos${tab !== 'all' ? ` con estado "${tab}"` : ''}.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(p => {
     const actions = buildActions(p);
     const addons  = Array.isArray(p.addons) && p.addons.length ? p.addons.join(', ') : '—';
+    const descCorta = p.descripcion ? escHtml(p.descripcion.slice(0, 80)) + (p.descripcion.length > 80 ? '…' : '') : '—';
     return `
       <tr>
         <td class="id-cell">${p.id.slice(0, 8)}…</td>
@@ -123,6 +124,9 @@ function renderTable(tab) {
         <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
         <td style="font-family:var(--font-label);font-size:0.78rem;color:var(--neon-cyan)">${p.precio ? '$' + p.precio : '—'}</td>
         <td style="font-size:0.78rem;color:var(--text-dim);white-space:nowrap">${formatDate(p.creado_en)}</td>
+        <td>
+          <span class="desc-preview" title="${escHtml(p.descripcion || '')}" style="font-size:0.78rem;color:var(--text-dim);display:block;max-width:200px;cursor:help">${descCorta}</span>
+        </td>
         <td><div class="action-btns">${actions}</div></td>
       </tr>
     `;
