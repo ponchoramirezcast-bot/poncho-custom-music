@@ -341,8 +341,12 @@ async function doAddDemo() {
 
   try {
     // Upload to Storage demos/
-    const ext  = file.name.split('.').pop();
-    const path = `demos/${Date.now()}-${nombre.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
+    const ext       = file.name.split('.').pop();
+    const safeName  = nombre
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos y ñ→n
+      .replace(/[^a-zA-Z0-9\s-]/g, '')                  // solo letras, números, guiones
+      .trim().replace(/\s+/g, '-').toLowerCase();
+    const path = `demos/${Date.now()}-${safeName}.${ext}`;
 
     const { error: upErr } = await sb.storage
       .from(STORAGE_BUCKET)
