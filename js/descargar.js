@@ -76,7 +76,7 @@ async function loadPage() {
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, audio_url, token_descarga')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, audio_url, token_descarga, nombre_cancion')
       .eq('token_descarga', token)
       .single();
 
@@ -107,7 +107,9 @@ async function loadPage() {
     // ✅ Pagado — show download
     initPlayer(data.audio_url);
 
-    const filename = `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}.mp3`;
+    const filename = data.nombre_cancion
+      ? `${data.nombre_cancion.replace(/\s+/g,'-')}.mp3`
+      : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}.mp3`;
 
     content.innerHTML = `
       <div class="download-icon">🎵</div>

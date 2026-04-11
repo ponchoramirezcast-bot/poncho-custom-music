@@ -4,7 +4,9 @@
       "mcp__d3b50921-df75-42d8-921f-2bfa02deef4d__get_cost",
       "mcp__d3b50921-df75-42d8-921f-2bfa02deef4d__confirm_cost",
       "mcp__d3b50921-df75-42d8-921f-2bfa02deef4d__create_project",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "mcp__d3b50921-df75-42d8-921f-2bfa02deef4d__get_edge_function",
+      "mcp__d3b50921-df75-42d8-921f-2bfa02deef4d__get_logs"
     ]
   }
 }

@@ -165,9 +165,12 @@ function openUploadModal(pedidoId) {
     document.getElementById('uploadPedidoInfo').textContent =
       `Cliente: ${p.cliente_nombre} | ${p.tipo_tema} | ${p.mood || ''} | Plan: ${p.plan}`;
     document.getElementById('finalPrecio').value = p.precio || (p.plan === 'plus' ? 299 : 200);
+    document.getElementById('nombreCancion').value = p.nombre_cancion || '';
   }
   document.getElementById('selectedFileName').textContent = '';
+  document.getElementById('selectedFileName2').textContent = '';
   document.getElementById('audioFile').value = '';
+  document.getElementById('audioFile2').value = '';
   document.getElementById('uploadProgress').classList.add('hidden');
   document.getElementById('uploadProgressFill').style.width = '0%';
   document.getElementById('uploadModal').classList.add('open');
@@ -179,10 +182,12 @@ function closeUploadModal() {
 }
 
 async function doUpload() {
-  const file   = document.getElementById('audioFile').files[0];
-  const precio = parseFloat(document.getElementById('finalPrecio').value) || 0;
+  const file    = document.getElementById('audioFile').files[0];
+  const file2   = document.getElementById('audioFile2').files[0];
+  const precio  = parseFloat(document.getElementById('finalPrecio').value) || 0;
+  const nombre  = document.getElementById('nombreCancion').value.trim();
 
-  if (!file) { showToast('Selecciona un archivo de audio.', 'error'); return; }
+  if (!file) { showToast('Selecciona al menos el archivo de Versión 1.', 'error'); return; }
   if (!uploadPedidoId) return;
 
   const uploadText    = document.getElementById('uploadText');
@@ -197,26 +202,36 @@ async function doUpload() {
   progressWrap.classList.remove('hidden');
 
   try {
-    // 1. Upload file to Supabase Storage
-    const ext  = file.name.split('.').pop();
-    const path = `pedidos/${uploadPedidoId}/audio.${ext}`;
+    // 1. Upload version 1
+    const ext1  = file.name.split('.').pop();
+    const path1 = `pedidos/${uploadPedidoId}/audio.${ext1}`;
+    const { error: upErr1 } = await sb.storage
+      .from(STORAGE_BUCKET).upload(path1, file, { upsert: true });
+    if (upErr1) throw upErr1;
+    progressFill.style.width = '40%';
 
-    const { error: upErr } = await sb.storage
-      .from(STORAGE_BUCKET)
-      .upload(path, file, { upsert: true });
+    // 2. Upload version 2 if provided
+    let path2 = null;
+    if (file2) {
+      const ext2 = file2.name.split('.').pop();
+      path2 = `pedidos/${uploadPedidoId}/audio2.${ext2}`;
+      const { error: upErr2 } = await sb.storage
+        .from(STORAGE_BUCKET).upload(path2, file2, { upsert: true });
+      if (upErr2) throw upErr2;
+    }
+    progressFill.style.width = '70%';
 
-    if (upErr) throw upErr;
-    progressFill.style.width = '60%';
-
-    // 2. Call edge function to update estado + notify client
+    // 3. Call edge function
     await callFunction('notificar_audio_listo', {
-      pedido_id:  uploadPedidoId,
-      audio_path: path,
+      pedido_id:      uploadPedidoId,
+      audio_path:     path1,
+      audio_path_2:   path2,
+      nombre_cancion: nombre || null,
       precio,
     });
 
     progressFill.style.width = '100%';
-    showToast('Audio subido. Cliente notificado.', 'success');
+    showToast(file2 ? 'Dos versiones subidas. Cliente notificado.' : 'Audio subido. Cliente notificado.', 'success');
     closeUploadModal();
     await loadPedidos();
 
@@ -433,10 +448,32 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cancelUpload')?.addEventListener('click', closeUploadModal);
   document.getElementById('confirmUpload')?.addEventListener('click', doUpload);
 
-  // File name preview (pedido audio)
+  // File name preview (pedido audio v1)
   document.getElementById('audioFile')?.addEventListener('change', e => {
     const f = e.target.files[0];
     document.getElementById('selectedFileName').textContent = f ? f.name : '';
+  });
+
+  // File name preview (pedido audio v2)
+  document.getElementById('audioFile2')?.addEventListener('change', e => {
+    const f = e.target.files[0];
+    document.getElementById('selectedFileName2').textContent = f ? f.name : '';
+  });
+
+  // Drag & drop on upload zone v2
+  const zone2 = document.getElementById('uploadZone2');
+  zone2?.addEventListener('dragover', e => { e.preventDefault(); zone2.classList.add('drag-over'); });
+  zone2?.addEventListener('dragleave', () => zone2.classList.remove('drag-over'));
+  zone2?.addEventListener('drop', e => {
+    e.preventDefault();
+    zone2.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('audio/')) {
+      document.getElementById('audioFile2').files = e.dataTransfer.files;
+      document.getElementById('selectedFileName2').textContent = f.name;
+    } else {
+      showToast('Solo se permiten archivos de audio.', 'error');
+    }
   });
 
   // Drag & drop on upload zone (pedido audio)
