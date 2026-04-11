@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Poncho Custom Music</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Login screen */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+    }
+
+    .login-title {
+      font-family: var(--font-title);
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: var(--neon-cyan);
+      letter-spacing: 0.15em;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* Dashboard */
+    #dashboard {
+      display: none;
+      padding: 6rem 2.5rem 4rem;
+      max-width: 1300px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    #dashboard.visible { display: block; }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .dash-title {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--neon-cyan);
+      letter-spacing: 0.15em;
+    }
+
+    /* Filter tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.4rem 1rem;
+      font-family: var(--font-label);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      background: transparent;
+      transition: all var(--transition);
+      cursor: none;
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      background: rgba(0,245,255,0.05);
+    }
+
+    /* ID truncate */
+    .id-cell {
+      font-family: var(--font-label);
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .action-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .btn-xs {
+      padding: 0.35rem 0.75rem;
+      font-family: var(--font-label);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid;
+      transition: all var(--transition);
+      cursor: none;
+      white-space: nowrap;
+    }
+
+    .btn-xs-cyan  { border-color: var(--neon-cyan);  color: var(--neon-cyan);  background: transparent; }
+    .btn-xs-cyan:hover { background: rgba(0,245,255,0.1); }
+    .btn-xs-green { border-color: var(--neon-green); color: var(--neon-green); background: transparent; }
+    .btn-xs-green:hover { background: rgba(57,255,20,0.1); }
+    .btn-xs-dim   { border-color: var(--border); color: var(--text-dim); background: transparent; cursor: not-allowed !important; opacity: 0.5; }
+
+    .no-pedidos {
+      text-align: center;
+      padding: 3rem;
+      font-family: var(--font-label);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 768px) {
+      #dashboard { padding: 5rem 1rem 3rem; }
+      .stats-bar  { grid-template-columns: repeat(2, 1fr); }
+      .col-email, .col-mood { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .col-telefono { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Login -->
+<div id="loginScreen">
+  <div class="orb orb-1" style="position:fixed"></div>
+  <div class="orb orb-2" style="position:fixed"></div>
+
+  <div class="login-card">
+    <div class="login-title">// ADMIN ACCESS</div>
+
+    <div style="display:flex;flex-direction:column;gap:1.2rem">
+      <div class="form-group">
+        <label for="loginEmail">Correo</label>
+        <input type="email" id="loginEmail" placeholder="admin@correo.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Contraseña</label>
+        <input type="password" id="loginPassword" autocomplete="current-password">
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-top:0.5rem">
+        <button class="btn-primary fw" id="loginBtn" style="justify-content:center">
+          <span id="loginText">Ingresar</span>
+          <div class="spinner spinner-sm hidden" id="loginSpinner"></div>
+        </button>
+      </div>
+      <span class="field-error visible hidden" id="loginError">Correo o contraseña incorrectos.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<nav class="main-nav" id="mainNav" style="display:none">
+  <a href="index.html" class="nav-logo">PONCHO<span>CUSTOM</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">Inicio</a>
+    <a href="demos.html">Demos</a>
+    <button class="btn-ghost" id="logoutBtn" style="padding:0.4rem 1rem;font-size:0.65rem;letter-spacing:0.12em">Cerrar sesión</button>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div id="dashboard">
+  <div class="dash-header">
+    <div class="dash-title">// PANEL DE PEDIDOS</div>
+    <button class="btn-ghost" id="refreshBtn" style="padding:0.4rem 1rem;font-size:0.65rem">↻ Actualizar</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card"><div><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total pedidos</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" id="statPend" style="color:var(--neon-yellow)">—</div><div class="stat-label">Pendientes</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" id="statComp">—</div><div class="stat-label">Completados</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" id="statPag" style="color:var(--neon-green)">—</div><div class="stat-label">Pagados</div></div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-tab="all">Todos</button>
+    <button class="tab-btn" data-tab="pendiente">Pendientes</button>
+    <button class="tab-btn" data-tab="completado">Completados</button>
+    <button class="tab-btn" data-tab="pagado">Pagados</button>
+  </div>
+
+  <!-- Section nav -->
+  <div class="filter-tabs" style="margin-bottom:0;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:2rem">
+    <button class="tab-btn active" data-section="pedidos" id="secPedidos">Pedidos</button>
+    <button class="tab-btn" data-section="demos" id="secDemos">Demos</button>
+  </div>
+
+  <!-- PEDIDOS SECTION -->
+  <div id="sectionPedidos">
+  <!-- Tabs -->
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-tab="all">Todos</button>
+    <button class="tab-btn" data-tab="pendiente">Pendientes</button>
+    <button class="tab-btn" data-tab="completado">Completados</button>
+    <button class="tab-btn" data-tab="pagado">Pagados</button>
+  </div>
+
+  <!-- Table -->
+  <div class="admin-table-wrap">
+    <table class="admin-table" id="pedidosTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th class="col-email">Email</th>
+          <th class="col-telefono">Celular</th>
+          <th>Tipo</th>
+          <th class="col-mood">Mood</th>
+          <th>Plan</th>
+          <th>Estado</th>
+          <th>Precio</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="pedidosTbody">
+        <tr><td colspan="11" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div><!-- /sectionPedidos -->
+
+  <!-- DEMOS SECTION -->
+  <div id="sectionDemos" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <p class="section-label" style="margin:0">Demos publicadas</p>
+      <button class="btn-primary" id="addDemoBtn" style="padding:0.5rem 1.2rem;font-size:0.65rem">+ Agregar Demo</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Tipo de música</th>
+            <th>URL del audio</th>
+            <th>Orden</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="demosTbody">
+          <tr><td colspan="6" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<!-- Add Demo Modal -->
+<div class="modal-overlay" id="addDemoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="demoModalTitle">Agregar Demo</span>
+      <button class="modal-close" id="closeAddDemo">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="demoNombre">Nombre de la demo *</label>
+        <input type="text" id="demoNombre" placeholder="Ej: Cumbia de Amor Demo 1">
+      </div>
+      <div class="form-group">
+        <label for="demoTipo">Tipo de música *</label>
+        <select id="demoTipo">
+          <option value="" disabled selected>— Elige —</option>
+          <option>Cumbia Norteña</option>
+          <option>Banda Sinaloense</option>
+          <option>Regional Mexicano</option>
+          <option>Hip Hop / Trap</option>
+          <option>Heavy Metal</option>
+          <option>Country Rock</option>
+          <option>Folk Metal</option>
+          <option>Pop Romántico</option>
+          <option>Rock en Español</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Archivo de audio * (MP3 / WAV)</label>
+        <div class="upload-zone" id="demoUploadZone">
+          <input type="file" id="demoAudioFile" accept="audio/*">
+          <p style="font-family:var(--font-label);font-size:0.68rem;letter-spacing:0.1em;color:var(--text-dim)">Arrastra o haz clic para seleccionar</p>
+          <p id="demoFileName" style="font-family:var(--font-label);font-size:0.65rem;color:var(--neon-cyan);margin-top:0.5rem"></p>
+        </div>
+        <div class="upload-progress hidden" id="demoUploadProgress">
+          <div class="upload-progress-fill" id="demoUploadFill"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="demoOrden">Orden (número, menor = primero)</label>
+        <input type="number" id="demoOrden" placeholder="0" min="0" value="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="cancelAddDemo">Cancelar</button>
+      <button class="btn-primary" id="confirmAddDemo">
+        <span id="addDemoText">Subir Demo</span>
+        <div class="spinner spinner-sm hidden" id="addDemoSpinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Subir Audio del Pedido</span>
+      <button class="modal-close" id="closeUpload">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--text-dim)" id="uploadPedidoInfo"></p>
+
+      <div class="form-group">
+        <label>Archivo de audio * (MP3 / WAV)</label>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="audioFile" accept="audio/*">
+          <p style="font-family:var(--font-label);font-size:0.68rem;letter-spacing:0.1em;color:var(--text-dim)">
+            Arrastra el archivo aquí o haz clic
+          </p>
+          <p id="selectedFileName" style="font-family:var(--font-label);font-size:0.65rem;color:var(--neon-cyan);margin-top:0.5rem"></p>
+        </div>
+        <div class="upload-progress hidden" id="uploadProgress">
+          <div class="upload-progress-fill" id="uploadProgressFill"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="finalPrecio">Precio final (MXN)</label>
+        <input type="number" id="finalPrecio" placeholder="200" min="0" step="1">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="cancelUpload">Cancelar</button>
+      <button class="btn-primary" id="confirmUpload">
+        <span id="uploadText">Subir y Notificar</span>
+        <div class="spinner spinner-sm hidden" id="uploadSpinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

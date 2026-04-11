@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poncho Custom Music — Tu Canción Personalizada</title>
+  <meta name="description" content="Crea tu canción personalizada con Poncho Custom Music. Heavy Metal, Cumbia, Hip Hop, Pop y más. Entrega en 48h.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* ---- Landing-specific styles ---- */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 7rem 2rem 5rem;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .hero-content { position: relative; z-index: 3; max-width: 820px; }
+
+    .hero-eyebrow {
+      font-family: var(--font-label);
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown 0.7s ease both;
+    }
+
+    .hero-title {
+      font-family: var(--font-title);
+      font-size: clamp(3rem, 10vw, 7.5rem);
+      font-weight: 900;
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideUp 0.9s ease 0.15s both;
+      position: relative;
+    }
+
+    .hero-title .line1 { display: block; color: #fff; }
+
+    .hero-title .line2 {
+      display: block;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 28px rgba(0,245,255,0.35));
+      position: relative;
+    }
+
+    /* Glitch effect on line2 */
+    .hero-title .line2::before,
+    .hero-title .line2::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .line2::before { animation: glitch1 6s infinite 1s; }
+    .hero-title .line2::after  { animation: glitch2 6s infinite 1.5s; }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--text-dim);
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+      animation: fadeSlideUp 0.9s ease 0.3s both;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeSlideUp 0.9s ease 0.45s both;
+    }
+
+    /* How it works */
+    #como-funciona {
+      padding: 8rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .step-box {
+      padding: 1.8rem 1.4rem;
+      border: 1px solid var(--border);
+      background: var(--dark-card);
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+
+    .step-box:hover { border-color: var(--neon-cyan); }
+
+    .step-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .step-box:hover::before { transform: scaleX(1); }
+
+    .step-number {
+      font-family: var(--font-title);
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: rgba(0,245,255,0.12);
+      line-height: 1;
+      margin-bottom: 0.8rem;
+    }
+
+    .step-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .step-title {
+      font-family: var(--font-title);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* Pricing */
+    #precios {
+      padding: 8rem 3rem;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,245,255,0.02) 50%, transparent 100%);
+    }
+
+    .precios-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .precios-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .pricing-card {
+      padding: 2.2rem;
+      border: 1px solid var(--border);
+      background: var(--dark-card);
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 50px rgba(0,245,255,0.1);
+    }
+
+    .pricing-card.popular {
+      border-color: var(--neon-pink);
+    }
+
+    .pricing-card.popular:hover {
+      border-color: var(--neon-pink);
+      box-shadow: 0 16px 50px rgba(255,0,110,0.15);
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .pricing-card:not(.popular)::before { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); }
+    .pricing-card.popular::before        { background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple)); }
+
+    .popular-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-family: var(--font-label);
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      padding: 0.22rem 0.7rem;
+      background: var(--neon-pink);
+      color: #000;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pricing-plan-name {
+      font-family: var(--font-label);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .pricing-price {
+      font-family: var(--font-title);
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--neon-cyan);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .pricing-card.popular .pricing-price { color: var(--neon-pink); }
+
+    .pricing-currency {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .pricing-features li::before {
+      content: '▸';
+      color: var(--neon-cyan);
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .pricing-card.popular .pricing-features li::before { color: var(--neon-pink); }
+
+    /* Add-ons section */
+    .addons-section {
+      margin-top: 2.5rem;
+    }
+
+    .addons-title {
+      font-family: var(--font-label);
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .addons-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .addon-display {
+      padding: 1.1rem;
+      border: 1px solid var(--border);
+      background: var(--dark-panel);
+      text-align: center;
+      transition: border-color var(--transition);
+    }
+
+    .addon-display:hover { border-color: var(--neon-purple); }
+
+    .addon-display .addon-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+
+    .addon-display .addon-name-text {
+      font-family: var(--font-label);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .addon-display .addon-price-text {
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--neon-purple);
+    }
+
+    /* Demos preview */
+    #demos-preview {
+      padding: 8rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .demos-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin-top: 3rem;
+    }
+
+    .demos-preview-cta {
+      text-align: center;
+      margin-top: 2.5rem;
+    }
+
+    /* Final CTA banner */
+    #cta-final {
+      padding: 7rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #cta-final::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-top: 1px solid rgba(255,0,110,0.2);
+      border-bottom: 1px solid rgba(255,0,110,0.2);
+      background: linear-gradient(180deg, rgba(255,0,110,0.04) 0%, transparent 50%, rgba(255,0,110,0.04) 100%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: var(--font-title);
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cta-sub {
+      font-size: 1rem;
+      color: var(--text-dim);
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Footer */
+    footer {
+      padding: 2.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-logo {
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: var(--neon-cyan);
+    }
+
+    .footer-copy {
+      font-family: var(--font-label);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #como-funciona  { padding: 5rem 1.5rem; }
+      #precios        { padding: 5rem 1.5rem; }
+      #demos-preview  { padding: 5rem 1.5rem; }
+      #cta-final      { padding: 5rem 1.5rem; }
+
+      .steps-grid           { grid-template-columns: repeat(2, 1fr); }
+      .precios-grid         { grid-template-columns: 1fr; }
+      .demos-preview-grid   { grid-template-columns: 1fr; }
+      .addons-list          { grid-template-columns: 1fr; }
+
+      footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      #hero { padding: 6rem 1rem 4rem; }
+      .steps-grid   { grid-template-columns: 1fr; }
+      .hero-ctas    { flex-direction: column; align-items: center; }
+      .hero-ctas .btn-primary,
+      .hero-ctas .btn-secondary { width: 100%; max-width: 280px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Navigation -->
+<nav class="main-nav" id="mainNav">
+  <a href="index.html" class="nav-logo">PONCHO<span>CUSTOM</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="demos.html">Demos</a>
+    <a href="solicitar.html">Solicitar Tema</a>
+    <a href="admin.html">Admin</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section id="hero">
+  <!-- Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">// Música 100% Personalizada</p>
+
+    <h1 class="hero-title">
+      <span class="line1">TU CANCIÓN</span>
+      <span class="line2" data-text="A LA MEDIDA">A LA MEDIDA</span>
+    </h1>
+
+    <p class="hero-sub">
+      Heavy Metal, Cumbia, Hip Hop, Pop y más — producida especialmente para ti.
+      Describe tu idea y la hacemos realidad en 48 horas.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="demos.html" class="btn-primary">▶ Escuchar Demos</a>
+      <a href="solicitar.html" class="btn-secondary">✦ Solicitar Mi Tema</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CÓMO FUNCIONA ===================== -->
+<section id="como-funciona">
+  <p class="section-label">Proceso</p>
+  <h2 class="section-title">¿Cómo <span class="accent">funciona?</span></h2>
+
+  <div class="steps-grid">
+    <div class="step-box" data-animate data-delay="0">
+      <div class="step-number">01</div>
+      <div class="step-icon">📝</div>
+      <div class="step-title">Solicitas</div>
+      <p class="step-desc">Llena el formulario con el tipo de música, el mood y el contexto de tu canción.</p>
+    </div>
+    <div class="step-box" data-animate data-delay="80">
+      <div class="step-number">02</div>
+      <div class="step-icon">🎛️</div>
+      <div class="step-title">Producimos</div>
+      <p class="step-desc">Creamos tu tema personalizado con producción profesional. Entrega en 48h.</p>
+    </div>
+    <div class="step-box" data-animate data-delay="160">
+      <div class="step-number">03</div>
+      <div class="step-icon">🎧</div>
+      <div class="step-title">Escuchas</div>
+      <p class="step-desc">Recibes un link privado para escuchar tu canción antes de pagar.</p>
+    </div>
+    <div class="step-box" data-animate data-delay="240">
+      <div class="step-number">04</div>
+      <div class="step-icon">⬇️</div>
+      <div class="step-title">Descargas</div>
+      <p class="step-desc">Una vez confirmado el pago, tu archivo queda disponible para descarga.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRECIOS ===================== -->
+<section id="precios">
+  <div class="precios-inner">
+    <p class="section-label">Planes</p>
+    <h2 class="section-title">Elige tu <span class="accent">plan</span></h2>
+
+    <div class="precios-grid">
+      <!-- Plan Básico -->
+      <div class="pricing-card" data-animate>
+        <p class="pricing-plan-name">Plan Básico</p>
+        <div class="pricing-price">$200</div>
+        <div class="pricing-currency">MXN — Audio MP3 Estándar</div>
+        <ul class="pricing-features">
+          <li>Audio MP3 de alta calidad</li>
+          <li>Entrega en 48 horas</li>
+          <li>Link privado de escucha</li>
+          <li>1 revisión incluida</li>
+          <li>Descarga permanente</li>
+        </ul>
+        <a href="solicitar.html?plan=basico" class="btn-primary fw" style="justify-content:center">Solicitar Básico</a>
+      </div>
+
+      <!-- Plan Plus -->
+      <div class="pricing-card popular" data-animate data-delay="100">
+        <div class="popular-badge">★ Popular</div>
+        <p class="pricing-plan-name">Plan Plus</p>
+        <div class="pricing-price" style="color:var(--neon-pink)">$299</div>
+        <div class="pricing-currency">MXN — Alta Calidad + Masterizado</div>
+        <ul class="pricing-features">
+          <li>Audio WAV / MP3 320kbps</li>
+          <li>Masterización profesional</li>
+          <li>Entrega en 48 horas</li>
+          <li>Link privado de escucha</li>
+          <li>2 revisiones incluidas</li>
+          <li>Descarga permanente</li>
+        </ul>
+        <a href="solicitar.html?plan=plus" class="btn-secondary fw" style="justify-content:center">Solicitar Plus</a>
+      </div>
+    </div>
+
+    <!-- Add-ons -->
+    <div class="addons-section" data-animate data-delay="200">
+      <p class="addons-title">// Agrega extras a cualquier plan</p>
+      <div class="addons-list">
+        <div class="addon-display">
+          <div class="addon-icon">🎨</div>
+          <span class="addon-name-text">Cover Art</span>
+          <span class="addon-price-text">+$80 MXN</span>
+        </div>
+        <div class="addon-display">
+          <div class="addon-icon">📄</div>
+          <span class="addon-name-text">Letra en PDF</span>
+          <span class="addon-price-text">+$50 MXN</span>
+        </div>
+        <div class="addon-display">
+          <div class="addon-icon">🎸</div>
+          <span class="addon-name-text">Versión Instrumental</span>
+          <span class="addon-price-text">+$80 MXN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEMOS PREVIEW ===================== -->
+<section id="demos-preview">
+  <p class="section-label">Escucha Antes</p>
+  <h2 class="section-title">Demos <span class="accent">Gratuitas</span></h2>
+  <p style="color:var(--text-dim);margin-top:0.5rem;font-size:0.95rem">Escucha ejemplos de lo que podemos crear para ti.</p>
+
+  <div class="demos-preview-grid" id="demosPreviewGrid">
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div class="demos-preview-cta">
+    <a href="demos.html" class="btn-ghost">Ver todas las demos →</a>
+  </div>
+</section>
+
+<!-- ===================== CTA FINAL ===================== -->
+<section id="cta-final">
+  <div class="orb" style="width:350px;height:350px;background:radial-gradient(circle,rgba(255,0,110,0.12) 0%,transparent 70%);top:10%;left:50%;transform:translateX(-50%);pointer-events:none;z-index:1;"></div>
+  <h2 class="cta-title" data-animate>¿Listo para tu canción?</h2>
+  <p class="cta-sub" data-animate>Cuéntanos tu historia — la ponemos a sonar.</p>
+  <a href="solicitar.html" class="btn-secondary" data-animate style="position:relative;z-index:2">✦ Solicitar Mi Tema Ahora</a>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <span class="footer-logo">PONCHO CUSTOM MUSIC</span>
+  <span class="footer-copy">© 2025 — Audios personalizados bajo demanda</span>
+</footer>
+
+<!-- Scripts -->
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script>
+  // Load demos preview (first 3)
+  document.addEventListener('DOMContentLoaded', async () => {
+    const grid = document.getElementById('demosPreviewGrid');
+    try {
+      const { data, error } = await sb.from('demos')
+        .select('id, nombre, tipo_tema, audio_url')
+        .order('orden', { ascending: true })
+        .limit(3);
+
+      if (error || !data || data.length === 0) {
+        grid.innerHTML = `<div class="audio-card z2" style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--text-dim)">
+          <p style="font-family:var(--font-label);font-size:0.7rem;letter-spacing:0.1em">Demos próximamente...</p>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = '';
+      data.forEach(demo => {
+        const card = document.createElement('div');
+        card.className = 'audio-card z2';
+        card.innerHTML = `
+          <audio id="aud-${demo.id}" src="${demo.audio_url}" preload="none"
+            controlsList="nodownload" oncontextmenu="return false"></audio>
+          <div class="player-header">
+            <div>
+              <div class="player-title">${demo.nombre}</div>
+            </div>
+            <span class="player-tag">${demo.tipo_tema}</span>
+          </div>
+          <div class="player-controls">
+            <button class="player-btn" data-id="${demo.id}" aria-label="Reproducir/Pausar">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="player-progress-wrap">
+              <div class="player-bar" data-id="${demo.id}">
+                <div class="player-bar-fill" id="fill-${demo.id}"></div>
+              </div>
+              <div class="player-times">
+                <span id="cur-${demo.id}">0:00</span>
+                <span id="dur-${demo.id}">0:00</span>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+        initMiniPlayer(demo.id);
+      });
+    } catch (e) {
+      grid.innerHTML = `<div class="audio-card z2" style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--neon-pink)">
+        <p style="font-family:var(--font-label);font-size:0.7rem">Error al cargar demos.</p>
+      </div>`;
+    }
+  });
+
+  function fmtTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2,'0')}`;
+  }
+
+  let currentAudioId = null;
+
+  function initMiniPlayer(id) {
+    const aud  = document.getElementById(`aud-${id}`);
+    const btn  = document.querySelector(`.player-btn[data-id="${id}"]`);
+    const bar  = document.querySelector(`.player-bar[data-id="${id}"]`);
+    const fill = document.getElementById(`fill-${id}`);
+    const cur  = document.getElementById(`cur-${id}`);
+    const dur  = document.getElementById(`dur-${id}`);
+
+    const playIcon = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+    const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+    btn.addEventListener('click', () => {
+      if (currentAudioId && currentAudioId !== id) {
+        const prev = document.getElementById(`aud-${currentAudioId}`);
+        const prevBtn = document.querySelector(`.player-btn[data-id="${currentAudioId}"]`);
+        if (prev) { prev.pause(); prev.currentTime = 0; }
+        if (prevBtn) prevBtn.innerHTML = playIcon;
+      }
+      if (aud.paused) {
+        aud.play();
+        btn.innerHTML = pauseIcon;
+        currentAudioId = id;
+      } else {
+        aud.pause();
+        btn.innerHTML = playIcon;
+        currentAudioId = null;
+      }
+    });
+
+    aud.addEventListener('timeupdate', () => {
+      if (!aud.duration) return;
+      fill.style.width = (aud.currentTime / aud.duration * 100) + '%';
+      cur.textContent = fmtTime(aud.currentTime);
+    });
+
+    aud.addEventListener('loadedmetadata', () => {
+      dur.textContent = fmtTime(aud.duration);
+    });
+
+    aud.addEventListener('ended', () => {
+      btn.innerHTML = playIcon;
+      fill.style.width = '0%';
+      currentAudioId = null;
+    });
+
+    bar.addEventListener('click', e => {
+      if (!aud.duration) return;
+      const rect = bar.getBoundingClientRect();
+      aud.currentTime = ((e.clientX - rect.left) / rect.width) * aud.duration;
+    });
+  }
+</script>
+
+</body>
+</html>

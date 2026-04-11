@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descargar Tu Tema — Poncho Custom Music</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #download-section {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7rem 2rem 5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .download-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--dark-card);
+      border: 1px solid rgba(57,255,20,0.25);
+      padding: 2.5rem;
+      position: relative;
+      text-align: center;
+    }
+
+    .download-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+    }
+
+    .download-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+    .download-title {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--neon-green);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    .download-sub {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    .download-meta {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .download-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Blocked state */
+    .blocked-card {
+      border-color: rgba(255,0,110,0.2);
+    }
+
+    .blocked-card::before {
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+    }
+
+    @media (max-width: 480px) {
+      .download-card { padding: 1.8rem 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<nav class="main-nav" id="mainNav">
+  <a href="index.html" class="nav-logo">PONCHO<span>CUSTOM</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="demos.html">Demos</a>
+    <a href="solicitar.html">Solicitar Tema</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="orb orb-1" style="position:fixed"></div>
+<div class="orb orb-2" style="position:fixed"></div>
+
+<section id="download-section">
+  <!-- Loading -->
+  <div id="stateLoading">
+    <div class="spinner" style="width:48px;height:48px"></div>
+  </div>
+
+  <!-- Download card -->
+  <div class="download-card hidden" id="downloadCard">
+
+    <!-- Player (mini) -->
+    <audio id="dlAudio" preload="metadata" controlsList="nodownload" oncontextmenu="return false"></audio>
+
+    <div id="playerWrap" class="hidden" style="margin-bottom:1.5rem">
+      <div class="player-controls" style="margin-bottom:0.5rem">
+        <button class="player-btn" id="dlPlayBtn" aria-label="Reproducir/Pausar">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="player-progress-wrap">
+          <div class="player-bar" id="dlBar"><div class="player-bar-fill" id="dlFill"></div></div>
+          <div class="player-times"><span id="dlCur">0:00</span><span id="dlDur">0:00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content injected by JS -->
+    <div id="cardContent"></div>
+
+  </div>
+</section>
+
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/descargar.js"></script>
+</body>
+</html>

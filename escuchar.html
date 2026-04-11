@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escuchar Tu Tema — Poncho Custom Music</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #listen-section {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7rem 2rem 5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .listen-card {
+      width: 100%;
+      max-width: 580px;
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .listen-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+    }
+
+    .listen-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.8rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .listen-name {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .listen-detail {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .listen-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.8rem;
+    }
+
+    .payment-info {
+      background: var(--dark-panel);
+      border: 1px solid rgba(255,230,0,0.2);
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .payment-title {
+      font-family: var(--font-label);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--neon-yellow);
+      text-transform: uppercase;
+    }
+
+    .payment-desc {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* State screens */
+    .state-screen {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .state-icon  { font-size: 3rem; margin-bottom: 1rem; }
+    .state-title { font-family: var(--font-title); font-size: 1rem; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+    .state-sub   { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; }
+
+    @media (max-width: 480px) {
+      .listen-card { padding: 1.5rem 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<nav class="main-nav" id="mainNav">
+  <a href="index.html" class="nav-logo">PONCHO<span>CUSTOM</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="demos.html">Demos</a>
+    <a href="solicitar.html">Solicitar Tema</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="orb orb-1" style="position:fixed"></div>
+<div class="orb orb-2" style="position:fixed"></div>
+
+<section id="listen-section">
+  <!-- Loading -->
+  <div id="stateLoading">
+    <div class="spinner" style="width:48px;height:48px"></div>
+  </div>
+
+  <!-- Main card (hidden until loaded) -->
+  <div class="listen-card hidden" id="listenCard">
+
+    <!-- Meta -->
+    <div class="listen-meta">
+      <div class="listen-name" id="clientName"></div>
+      <div class="listen-detail">
+        <span class="player-tag" id="tipoTag"></span>
+        <span class="player-tag" id="moodTag" style="border-color:rgba(191,0,255,0.4);color:var(--neon-purple)"></span>
+        <span id="estadoBadge"></span>
+      </div>
+    </div>
+
+    <!-- Pendiente state -->
+    <div id="statePendiente" class="state-screen hidden">
+      <div class="state-icon">🎛️</div>
+      <div class="state-title" style="color:var(--neon-yellow)">Tu tema está en producción</div>
+      <p class="state-sub">Estamos trabajando en tu canción. Te enviaremos un correo cuando esté lista para escuchar.</p>
+      <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="demos.html" class="btn-ghost">Ver demos mientras tanto</a>
+      </div>
+    </div>
+
+    <!-- Completado/Pagado state: player + actions -->
+    <div id="statePlayer" class="hidden">
+      <!-- Player -->
+      <audio id="mainAudio" preload="metadata" controlsList="nodownload" oncontextmenu="return false"></audio>
+
+      <div class="player-controls" style="margin-bottom:0.75rem">
+        <button class="player-btn" id="mainPlayBtn" aria-label="Reproducir/Pausar">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="player-progress-wrap">
+          <div class="player-bar" id="mainBar">
+            <div class="player-bar-fill" id="mainFill"></div>
+          </div>
+          <div class="player-times">
+            <span id="mainCur">0:00</span>
+            <span id="mainDur">0:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="listen-actions">
+
+        <!-- If completado: show pay button + instructions -->
+        <div id="actionsPay">
+          <div class="payment-info mb-md">
+            <div class="payment-title">⚡ Tu tema está listo — escúchalo arriba</div>
+            <p class="payment-desc">
+              Para descargar el archivo, realiza el pago y Poncho activará tu descarga.
+            </p>
+          </div>
+
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+            <a id="waPayBtn" href="#" class="btn-secondary" target="_blank" rel="noopener">
+              💬 Ir a Pagar por WhatsApp
+            </a>
+            <button class="btn-disabled" disabled style="flex:1;min-width:120px">
+              ⬇ Descargar (paga primero)
+            </button>
+          </div>
+        </div>
+
+        <!-- If pagado: show link to descargar -->
+        <div id="actionsPaid" class="hidden">
+          <div class="payment-info mb-md" style="border-color:rgba(57,255,20,0.2)">
+            <div class="payment-title" style="color:var(--neon-green)">✅ Pago confirmado</div>
+            <p class="payment-desc">Tu descarga está activa. Usa el link que recibiste por correo o descarga aquí.</p>
+          </div>
+          <a id="downloadPageBtn" href="#" class="btn-primary">⬇ Ir a Descargar</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="stateError" class="state-screen hidden">
+      <div class="state-icon">🔒</div>
+      <div class="state-title" style="color:var(--neon-pink)">Enlace inválido</div>
+      <p class="state-sub">Este link no existe o ha expirado. Revisa el correo que te enviamos.</p>
+      <div style="margin-top:1.5rem">
+        <a href="index.html" class="btn-ghost">Volver al inicio</a>
+      </div>
+    </div>
+
+  </div><!-- /listenCard -->
+</section>
+
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/escuchar.js"></script>
+</body>
+</html>

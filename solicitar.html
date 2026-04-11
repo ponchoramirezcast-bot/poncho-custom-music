@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitar Tema — Poncho Custom Music</title>
+  <meta name="description" content="Solicita tu canción personalizada. Llena el formulario y recibe tu tema en 48 horas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #solicitar-section {
+      padding: 3rem 2rem 7rem;
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .form-container {
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .form-container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+    }
+
+    .form-step {
+      display: none;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+
+    .form-step.active { display: flex; }
+
+    .step-heading {
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-sub {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      gap: 1rem;
+    }
+
+    /* Summary (step 3) */
+    .summary-block {
+      background: var(--dark-panel);
+      border: 1px solid var(--border);
+      padding: 1.3rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .summary-label {
+      font-family: var(--font-label);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .summary-value {
+      color: #fff;
+      text-align: right;
+    }
+
+    /* Success screen */
+    #successScreen {
+      display: none;
+      text-align: center;
+      padding: 3rem 2rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    #successScreen.active { display: flex; }
+
+    .success-icon {
+      font-size: 3.5rem;
+      animation: fadeSlideUp 0.5s ease both;
+    }
+
+    .success-title {
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--neon-green);
+      letter-spacing: 0.1em;
+    }
+
+    .success-sub {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+      .form-container { padding: 1.8rem 1.2rem; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      #solicitar-section { padding: 1.5rem 0.75rem 5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<nav class="main-nav" id="mainNav">
+  <a href="index.html" class="nav-logo">PONCHO<span>CUSTOM</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="demos.html">Demos</a>
+    <a href="solicitar.html">Solicitar Tema</a>
+    <a href="admin.html">Admin</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Page Hero -->
+<div class="page-hero">
+  <div class="orb orb-1"></div>
+  <h1 class="hero-title z2">
+    <span style="color:#fff">SOLICITA</span>
+    <span style="background:linear-gradient(90deg,var(--neon-pink),var(--neon-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> TU TEMA</span>
+  </h1>
+  <p class="hero-sub z2">Cuéntanos tu historia y la ponemos a sonar en 48 horas.</p>
+</div>
+
+<!-- Form -->
+<section id="solicitar-section">
+  <!-- Step indicator -->
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-item active" id="si-1">
+      <div class="step-num">1</div>
+      <span class="step-label">Tus datos</span>
+    </div>
+    <div class="step-line" id="sl-1"></div>
+    <div class="step-item" id="si-2">
+      <div class="step-num">2</div>
+      <span class="step-label">Tu canción</span>
+    </div>
+    <div class="step-line" id="sl-2"></div>
+    <div class="step-item" id="si-3">
+      <div class="step-num">3</div>
+      <span class="step-label">Confirmar</span>
+    </div>
+  </div>
+
+  <!-- Form container -->
+  <div class="form-container" id="formContainer">
+
+    <!-- ======= STEP 1: Datos personales ======= -->
+    <div class="form-step active" id="step1">
+      <div>
+        <div class="step-heading">// Paso 1 — Tus datos</div>
+        <div class="step-sub">Para enviarte el link de escucha y mantenerte informado.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="nombre">Nombre completo *</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan García" autocomplete="name">
+        <span class="field-error" id="err-nombre">Por favor ingresa tu nombre.</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Correo electrónico *</label>
+          <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email">
+          <span class="field-error" id="err-email">Correo inválido.</span>
+        </div>
+        <div class="form-group">
+          <label for="telefono">Celular / WhatsApp *</label>
+          <input type="tel" id="telefono" placeholder="10 dígitos" autocomplete="tel" maxlength="15">
+          <span class="field-error" id="err-telefono">Ingresa un número válido (10 dígitos).</span>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <span></span>
+        <button class="btn-primary" id="next1">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ======= STEP 2: Detalles del tema ======= -->
+    <div class="form-step" id="step2">
+      <div>
+        <div class="step-heading">// Paso 2 — Tu canción</div>
+        <div class="step-sub">Dinos cómo quieres que suene y de qué trata.</div>
+      </div>
+
+      <!-- Tipo de música -->
+      <div class="form-group">
+        <label for="tipoTema">Tipo de música *</label>
+        <select id="tipoTema">
+          <option value="" disabled selected>— Elige el género —</option>
+          <option>Cumbia Norteña</option>
+          <option>Banda Sinaloense</option>
+          <option>Regional Mexicano</option>
+          <option>Hip Hop / Trap</option>
+          <option>Heavy Metal</option>
+          <option>Country Rock</option>
+          <option>Folk Metal</option>
+          <option>Pop Romántico</option>
+          <option>Rock en Español</option>
+          <option>Otro (especifica en el contexto)</option>
+        </select>
+        <span class="field-error" id="err-tipo">Selecciona un género.</span>
+      </div>
+
+      <!-- Plan -->
+      <div class="form-group">
+        <label>Plan *</label>
+        <div class="plan-cards">
+          <div class="plan-card selected" data-plan="basico">
+            <input type="radio" name="plan" value="basico" checked>
+            <div class="plan-name">Plan Básico</div>
+            <div class="plan-price">$200</div>
+            <div class="plan-features">MP3 estándar · Entrega 48h · 1 revisión</div>
+          </div>
+          <div class="plan-card" data-plan="plus">
+            <input type="radio" name="plan" value="plus">
+            <div class="plan-badge">★ Popular</div>
+            <div class="plan-name">Plan Plus</div>
+            <div class="plan-price" style="color:var(--neon-pink)">$299</div>
+            <div class="plan-features">WAV/MP3 320kbps · Masterizado · 2 revisiones</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add-ons -->
+      <div class="form-group">
+        <label>Extras opcionales</label>
+        <div class="addon-grid">
+          <label class="addon-check" data-addon="cover_art">
+            <input type="checkbox" value="cover_art">
+            <div class="addon-check-box"></div>
+            <div class="addon-info">
+              <span class="addon-name">🎨 Cover Art</span>
+              <span class="addon-price">+$80 MXN</span>
+            </div>
+          </label>
+          <label class="addon-check" data-addon="letra_pdf">
+            <input type="checkbox" value="letra_pdf">
+            <div class="addon-check-box"></div>
+            <div class="addon-info">
+              <span class="addon-name">📄 Letra en PDF</span>
+              <span class="addon-price">+$50 MXN</span>
+            </div>
+          </label>
+          <label class="addon-check" data-addon="instrumental">
+            <input type="checkbox" value="instrumental">
+            <div class="addon-check-box"></div>
+            <div class="addon-info">
+              <span class="addon-name">🎸 Instrumental</span>
+              <span class="addon-price">+$80 MXN</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Mood -->
+      <div class="form-group">
+        <label>Mood de la canción *</label>
+        <div class="mood-grid" id="moodGrid">
+          <div class="mood-chip" data-mood="Alegre">😄 Alegre</div>
+          <div class="mood-chip" data-mood="Romántica">❤️ Romántica</div>
+          <div class="mood-chip" data-mood="Triste">😢 Triste</div>
+          <div class="mood-chip" data-mood="Melancólica">🌧️ Melancólica</div>
+          <div class="mood-chip" data-mood="Fiesta/Bailable">🎉 Fiesta</div>
+          <div class="mood-chip" data-mood="Motivacional">🔥 Motivacional</div>
+          <div class="mood-chip" data-mood="Épica">⚔️ Épica</div>
+          <div class="mood-chip" data-mood="Otro">✨ Otro</div>
+        </div>
+        <span class="field-error" id="err-mood">Selecciona un mood.</span>
+      </div>
+
+      <!-- Contexto -->
+      <div class="form-group">
+        <label for="descripcion">Contexto de la canción * <span style="color:var(--text-dim);font-size:0.6rem">(mín. 80 caracteres)</span></label>
+        <textarea id="descripcion" rows="5"
+          placeholder="Cuéntame de qué trata tu canción: ¿Es para una persona especial? ¿Una ocasión? ¿Qué historia quieres contar? ¿Hay palabras o frases que quieras incluir? Mientras más detalles, mejor será el resultado."></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="field-error" id="err-desc">Describe tu canción (mínimo 80 caracteres).</span>
+          <span class="char-counter" id="charCounter">0 / 80</span>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <button class="btn-ghost" id="back2">← Atrás</button>
+        <button class="btn-primary" id="next2">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ======= STEP 3: Resumen ======= -->
+    <div class="form-step" id="step3">
+      <div>
+        <div class="step-heading">// Paso 3 — Confirmar pedido</div>
+        <div class="step-sub">Revisa tu pedido antes de enviarlo.</div>
+      </div>
+
+      <div class="summary-block" id="summaryBlock">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="price-summary" id="priceSummary">
+        <!-- Populated by JS -->
+      </div>
+
+      <p style="font-size:0.82rem;color:var(--text-dim);line-height:1.6">
+        Al enviar tu pedido recibirás un correo de confirmación. Una vez que tu tema esté listo,
+        te enviaremos un link privado para escucharlo antes de pagar.
+      </p>
+
+      <div class="form-nav">
+        <button class="btn-ghost" id="back3">← Atrás</button>
+        <button class="btn-secondary" id="submitBtn">
+          <span id="submitText">✦ Enviar Pedido</span>
+          <div class="spinner spinner-sm hidden" id="submitSpinner"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ======= SUCCESS ======= -->
+    <div id="successScreen">
+      <div class="success-icon">🎵</div>
+      <div class="success-title">¡Pedido Enviado!</div>
+      <p class="success-sub">
+        Recibimos tu solicitud. Revisa tu correo para la confirmación.
+        Te notificaremos cuando tu tema esté listo para escuchar.
+      </p>
+      <p style="font-family:var(--font-label);font-size:0.65rem;letter-spacing:0.1em;color:var(--text-dim)">
+        ID: <span id="pedidoId" style="color:var(--neon-cyan)"></span>
+      </p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:0.5rem">
+        <a href="demos.html" class="btn-ghost">Ver más demos</a>
+        <a href="index.html" class="btn-primary">Ir al inicio</a>
+      </div>
+    </div>
+
+  </div><!-- /form-container -->
+</section>
+
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/solicitar.js"></script>
+</body>
+</html>
