@@ -4,7 +4,7 @@
    ============================================================ */
 
 // WhatsApp number — replace with your actual number
-const OWNER_WHATSAPP = '524497573058';
+const OWNER_WHATSAPP = '5214497573058';
 
 function fmtTime(s) {
   if (isNaN(s) || !isFinite(s)) return '0:00';
