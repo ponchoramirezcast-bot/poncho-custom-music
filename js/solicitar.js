@@ -46,8 +46,14 @@ function validateStep1() {
   const telRe    = /^\+?[\d\s\-]{10,15}$/;
   let ok = true;
 
-  showErr('err-nombre',   !nombre);           if (!nombre)           ok = false;
-  showErr('err-email',    !emailRe.test(email)); if (!emailRe.test(email)) ok = false;
+  // Nombre: obligatorio
+  showErr('err-nombre', !nombre); if (!nombre) ok = false;
+
+  // Email: opcional, pero si lo pone debe ser válido
+  const emailInvalid = email.length > 0 && !emailRe.test(email);
+  showErr('err-email', emailInvalid); if (emailInvalid) ok = false;
+
+  // Teléfono: obligatorio
   showErr('err-telefono', !telRe.test(telefono)); if (!telRe.test(telefono)) ok = false;
 
   return ok;
@@ -78,7 +84,7 @@ function buildSummary() {
 
   document.getElementById('summaryBlock').innerHTML = `
     <div class="summary-row"><span class="summary-label">Nombre</span><span class="summary-value">${nombre}</span></div>
-    <div class="summary-row"><span class="summary-label">Email</span><span class="summary-value">${email}</span></div>
+    <div class="summary-row"><span class="summary-label">Email</span><span class="summary-value" style="color:${email ? 'inherit' : 'var(--text-dim)'}">${email || 'Sin correo — se notificará por WhatsApp'}</span></div>
     <div class="summary-row"><span class="summary-label">Celular</span><span class="summary-value">${telefono}</span></div>
     <div class="summary-row"><span class="summary-label">Género</span><span class="summary-value">${tipo}</span></div>
     <div class="summary-row"><span class="summary-label">Mood</span><span class="summary-value">${selectedMood}</span></div>
