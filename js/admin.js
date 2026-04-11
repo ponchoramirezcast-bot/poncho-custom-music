@@ -125,7 +125,7 @@ function renderTable(tab) {
         <td style="font-family:var(--font-label);font-size:0.78rem;color:var(--neon-cyan)">${p.precio ? '$' + p.precio : '—'}</td>
         <td style="font-size:0.78rem;color:var(--text-dim);white-space:nowrap">${formatDate(p.creado_en)}</td>
         <td>
-          <span class="desc-preview" title="${escHtml(p.descripcion || '')}" style="font-size:0.78rem;color:var(--text-dim);display:block;max-width:200px;cursor:help">${descCorta}</span>
+          <span class="desc-preview" data-action="desc" data-id="${p.id}" style="font-size:0.78rem;color:var(--neon-cyan);display:block;max-width:200px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px">${descCorta}</span>
         </td>
         <td><div class="action-btns">${actions}</div></td>
       </tr>
@@ -138,6 +138,7 @@ function renderTable(tab) {
       const { action, id } = btn.dataset;
       if (action === 'upload')  openUploadModal(id);
       if (action === 'pago')    confirmarPago(id);
+      if (action === 'desc')    openDescModal(id);
       if (action === 'escuchar') {
         const p = allPedidos.find(x => x.id === id);
         if (p) window.open(`escuchar.html?token=${p.token_descarga}`, '_blank');
@@ -418,6 +419,21 @@ function switchSection(section) {
   if (!isPedidos) loadDemos();
 }
 
+/* ---- Descripción Modal ----------------------------------- */
+function openDescModal(pedidoId) {
+  const p = allPedidos.find(x => x.id === pedidoId);
+  if (!p) return;
+  document.getElementById('descModalMeta').textContent =
+    `${p.cliente_nombre} · ${p.tipo_tema} · ${p.mood || ''} · Plan ${p.plan || 'básico'}`;
+  document.getElementById('descModalText').textContent = p.descripcion || '(sin descripción)';
+  document.getElementById('copyDescText').textContent = '📋 Copiar';
+  document.getElementById('descModal').classList.add('open');
+}
+
+function closeDescModal() {
+  document.getElementById('descModal').classList.remove('open');
+}
+
 /* ---- Helpers --------------------------------------------- */
 function escHtml(str) {
   if (!str) return '';
@@ -539,5 +555,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close modal on overlay click
   document.getElementById('uploadModal')?.addEventListener('click', e => {
     if (e.target === document.getElementById('uploadModal')) closeUploadModal();
+  });
+
+  // Descripción modal
+  document.getElementById('closeDescModal')?.addEventListener('click', closeDescModal);
+  document.getElementById('closeDescModal2')?.addEventListener('click', closeDescModal);
+  document.getElementById('descModal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('descModal')) closeDescModal();
+  });
+  document.getElementById('copyDescBtn')?.addEventListener('click', () => {
+    const text = document.getElementById('descModalText').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById('copyDescText').textContent = '✅ Copiado';
+      setTimeout(() => { document.getElementById('copyDescText').textContent = '📋 Copiar'; }, 2000);
+    }).catch(() => showToast('No se pudo copiar.', 'error'));
   });
 });

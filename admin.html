@@ -399,6 +399,26 @@
   </div>
 </div>
 
+<!-- Descripción Modal -->
+<div class="modal-overlay" id="descModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">Descripción del pedido</span>
+      <button class="modal-close" id="closeDescModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="descModalMeta" style="font-family:var(--font-label);font-size:0.62rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:1rem"></p>
+      <p id="descModalText" style="font-size:0.9rem;color:#e0e0e0;line-height:1.8;white-space:pre-wrap"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="closeDescModal2">Cerrar</button>
+      <button class="btn-primary" id="copyDescBtn" style="min-width:120px">
+        <span id="copyDescText">📋 Copiar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="js/supabase-config.js"></script>
 <script src="js/main.js"></script>
 <script src="js/admin.js"></script>
