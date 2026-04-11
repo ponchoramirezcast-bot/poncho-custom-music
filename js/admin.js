@@ -351,9 +351,12 @@ async function doAddDemo() {
     if (upErr) throw upErr;
     progressFill.style.width = '60%';
 
-    // Get public URL
-    const { data: urlData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-    const audio_url = urlData.publicUrl;
+    // Signed URL de 10 años para demos (bucket privado)
+    const { data: signedData, error: signErr } = await sb.storage
+      .from(STORAGE_BUCKET)
+      .createSignedUrl(path, 315360000);
+    if (signErr) throw signErr;
+    const audio_url = signedData.signedUrl;
 
     // Insert to demos table
     const { error: insertErr } = await sb.from('demos').insert({
