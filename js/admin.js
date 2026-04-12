@@ -139,6 +139,7 @@ function renderTable(tab) {
       if (action === 'upload')  openUploadModal(id);
       if (action === 'pago')    confirmarPago(id);
       if (action === 'desc')    openDescModal(id);
+      if (action === 'delete')  eliminarPedido(id);
       if (action === 'escuchar') {
         const p = allPedidos.find(x => x.id === id);
         if (p) window.open(`escuchar.html?token=${p.token_descarga}`, '_blank');
@@ -159,7 +160,8 @@ function buildActions(p) {
   if (p.estado === 'pagado') {
     html += `<button class="btn-xs btn-xs-cyan" data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
   }
-  return html || '<span class="btn-xs btn-xs-dim">—</span>';
+  html += `<button class="btn-xs" data-action="delete" data-id="${p.id}" style="border-color:rgba(255,0,110,0.4);color:var(--neon-pink)">✕ Eliminar</button>`;
+  return html;
 }
 
 /* ---- Upload Modal ---------------------------------------- */
@@ -417,6 +419,30 @@ function switchSection(section) {
   document.getElementById('secDemos').classList.toggle('active', !isPedidos);
 
   if (!isPedidos) loadDemos();
+}
+
+/* ---- Eliminar Pedido ------------------------------------- */
+async function eliminarPedido(pedidoId) {
+  const p = allPedidos.find(x => x.id === pedidoId);
+  const nombre = p ? p.cliente_nombre : pedidoId.slice(0, 8);
+  if (!confirm(`¿Eliminar el pedido de ${nombre}?\n\nEsta acción no se puede deshacer.`)) return;
+
+  try {
+    // Eliminar archivos de audio si existen
+    const paths = [p?.audio_path, p?.audio_path_2].filter(Boolean);
+    if (paths.length) {
+      await sb.storage.from(STORAGE_BUCKET).remove(paths).catch(console.error);
+    }
+    // Eliminar de la tabla
+    const { error } = await sb.from('pedidos').delete().eq('id', pedidoId);
+    if (error) throw error;
+
+    showToast('Pedido eliminado.', 'success');
+    await loadPedidos();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al eliminar: ' + (err.message || err), 'error');
+  }
 }
 
 /* ---- Descripción Modal ----------------------------------- */
