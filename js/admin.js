@@ -62,6 +62,8 @@ function showDashboard() {
   document.getElementById('mainNav').style.display = 'flex';
   document.getElementById('dashboard').classList.add('visible');
   loadPedidos();
+  // Verificar recordatorios de pago pendientes (silencioso)
+  callFunction('recordatorio_pago', {}).catch(console.error);
 }
 
 /* ---- Load pedidos ---------------------------------------- */
@@ -96,12 +98,32 @@ function updateStats() {
     .filter(p => p.estado === 'pagado' && p.precio)
     .reduce((sum, p) => sum + parseFloat(p.precio), 0);
 
-  document.getElementById('statTotal').textContent    = allPedidos.length;
-  document.getElementById('statPend').textContent     = pend;
-  document.getElementById('statComp').textContent     = comp;
-  document.getElementById('statPag').textContent      = pag;
+  document.getElementById('statTotal').textContent = allPedidos.length;
+  document.getElementById('statPend').textContent  = pend;
+  document.getElementById('statComp').textContent  = comp;
+  document.getElementById('statPag').textContent   = pag;
   const ingEl = document.getElementById('statIngresos');
   if (ingEl) ingEl.textContent = '$' + ingresos.toLocaleString('es-MX');
+
+  // Mini bar chart: géneros más solicitados
+  const genres = {};
+  allPedidos.forEach(p => { if (p.tipo_tema) genres[p.tipo_tema] = (genres[p.tipo_tema] || 0) + 1; });
+  const sorted   = Object.entries(genres).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const maxCount = sorted[0]?.[1] || 1;
+  const genreEl   = document.getElementById('genreBars');
+  const genreWrap = document.getElementById('genreStats');
+  if (genreEl && sorted.length > 0) {
+    genreWrap.style.display = 'block';
+    genreEl.innerHTML = sorted.map(([name, count]) => `
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.45rem">
+        <span style="font-family:var(--font-label);font-size:0.6rem;color:var(--text-dim);width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0" title="${escHtml(name)}">${escHtml(name)}</span>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,0.05)">
+          <div style="height:100%;width:${Math.round(count / maxCount * 100)}%;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));transition:width 0.6s ease"></div>
+        </div>
+        <span style="font-family:var(--font-label);font-size:0.6rem;color:var(--neon-cyan);min-width:16px;text-align:right">${count}</span>
+      </div>
+    `).join('');
+  }
 }
 
 function renderTable(tab) {

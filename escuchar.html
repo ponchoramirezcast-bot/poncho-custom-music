@@ -306,6 +306,25 @@
             <p class="payment-desc">Tu descarga está activa. Usa el link que recibiste por correo o descarga aquí.</p>
           </div>
           <a id="downloadPageBtn" href="#" class="btn-primary">⬇ Ir a Descargar</a>
+
+          <!-- Rating widget -->
+          <div id="ratingWrap" class="hidden" style="margin-top:1.5rem;padding:1.2rem;background:var(--dark-panel);border:1px solid rgba(0,245,255,0.15)">
+            <p style="font-family:var(--font-label);font-size:0.6rem;letter-spacing:0.12em;color:var(--neon-cyan);text-transform:uppercase;margin-bottom:0.8rem">// ¿Cómo quedó tu canción?</p>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem">
+              <button class="star-btn" data-star="1" style="font-size:1.8rem;background:none;border:none;cursor:pointer;color:var(--text-dim);transition:color 0.1s;padding:0;line-height:1">★</button>
+              <button class="star-btn" data-star="2" style="font-size:1.8rem;background:none;border:none;cursor:pointer;color:var(--text-dim);transition:color 0.1s;padding:0;line-height:1">★</button>
+              <button class="star-btn" data-star="3" style="font-size:1.8rem;background:none;border:none;cursor:pointer;color:var(--text-dim);transition:color 0.1s;padding:0;line-height:1">★</button>
+              <button class="star-btn" data-star="4" style="font-size:1.8rem;background:none;border:none;cursor:pointer;color:var(--text-dim);transition:color 0.1s;padding:0;line-height:1">★</button>
+              <button class="star-btn" data-star="5" style="font-size:1.8rem;background:none;border:none;cursor:pointer;color:var(--text-dim);transition:color 0.1s;padding:0;line-height:1">★</button>
+            </div>
+            <textarea id="ratingComment" rows="2" placeholder="Cuéntanos cómo fue tu experiencia (opcional)..." style="width:100%;resize:vertical;font-family:var(--font-body);font-size:0.85rem;margin-bottom:0.75rem;background:var(--dark-bg);border:1px solid var(--border);color:#e0e0e0;padding:0.6rem 0.8rem;box-sizing:border-box"></textarea>
+            <button class="btn-primary" id="submitRatingBtn" style="padding:0.5rem 1.2rem;font-size:0.65rem" disabled>
+              <span id="submitRatingText">Enviar calificación</span>
+            </button>
+          </div>
+          <div id="ratingDone" class="hidden" style="margin-top:1.5rem;padding:0.9rem;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.2);text-align:center">
+            <p style="font-family:var(--font-label);font-size:0.65rem;color:var(--neon-green);letter-spacing:0.1em">⭐ ¡Gracias por calificarnos!</p>
+          </div>
         </div>
 
       </div>

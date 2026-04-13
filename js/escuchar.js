@@ -165,6 +165,12 @@ async function loadPedido() {
       hide('actionsPay'); hide('previewWall'); show('actionsPaid');
       // Para descarga usamos token_descarga
       document.getElementById('downloadPageBtn').href = `descargar.html?token=${data.token_descarga}`;
+      // Rating widget
+      if (data.calificacion) {
+        document.getElementById('ratingDone')?.classList.remove('hidden');
+      } else {
+        initRating(data.token_descarga);
+      }
     } else {
       show('previewHint');
       const versionStr = data.audio_path_2 ? ` | Versión elegida: ${(data.version_elegida||1)===1?'A':'B'}` : '';
@@ -181,6 +187,56 @@ async function loadPedido() {
     console.error(err);
     showState('stateError');
   }
+}
+
+/* ---- Rating widget --------------------------------------- */
+function initRating(downloadToken) {
+  const wrap      = document.getElementById('ratingWrap');
+  const submitBtn = document.getElementById('submitRatingBtn');
+  if (!wrap || !submitBtn) return;
+
+  wrap.classList.remove('hidden');
+
+  let selectedStars = 0;
+  const starBtns = wrap.querySelectorAll('.star-btn');
+
+  function paintStars(n) {
+    starBtns.forEach((b, i) => {
+      b.style.color = i < n ? 'var(--neon-yellow)' : 'var(--text-dim)';
+    });
+  }
+
+  starBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => paintStars(parseInt(btn.dataset.star)));
+    btn.addEventListener('mouseleave', () => paintStars(selectedStars));
+    btn.addEventListener('click', () => {
+      selectedStars = parseInt(btn.dataset.star);
+      paintStars(selectedStars);
+      submitBtn.disabled = false;
+    });
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    if (!selectedStars) return;
+    submitBtn.disabled = true;
+    document.getElementById('submitRatingText').textContent = 'Enviando…';
+
+    try {
+      await callFunction('guardar_calificacion', {
+        token:       downloadToken,
+        calificacion: selectedStars,
+        comentario:  document.getElementById('ratingComment').value,
+      });
+      wrap.classList.add('hidden');
+      document.getElementById('ratingDone').classList.remove('hidden');
+      showToast('¡Gracias por tu calificación! 🌟', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Error al enviar calificación. Intenta de nuevo.', 'error');
+      submitBtn.disabled = false;
+      document.getElementById('submitRatingText').textContent = 'Enviar calificación';
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', loadPedido);

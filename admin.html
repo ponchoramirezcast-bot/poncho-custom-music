@@ -221,7 +221,7 @@
   </div>
 
   <!-- Stats -->
-  <div class="stats-bar" id="statsBar">
+  <div class="stats-bar" id="statsBar" style="margin-bottom:1rem">
     <div class="stat-card"><div><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total pedidos</div></div></div>
     <div class="stat-card"><div><div class="stat-num" id="statPend" style="color:var(--neon-yellow)">—</div><div class="stat-label">Pendientes</div></div></div>
     <div class="stat-card"><div><div class="stat-num" id="statComp">—</div><div class="stat-label">Completados</div></div></div>
@@ -235,6 +235,12 @@
     <button class="tab-btn" data-tab="pendiente">Pendientes</button>
     <button class="tab-btn" data-tab="completado">Completados</button>
     <button class="tab-btn" data-tab="pagado">Pagados</button>
+  </div>
+
+  <!-- Genre mini stats -->
+  <div id="genreStats" style="display:none;margin-bottom:2rem;padding:1rem 1.2rem;background:var(--dark-card);border:1px solid var(--border)">
+    <p style="font-family:var(--font-label);font-size:0.58rem;letter-spacing:0.18em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.8rem">// Géneros más solicitados</p>
+    <div id="genreBars"></div>
   </div>
 
   <!-- Section nav -->
