@@ -127,7 +127,7 @@ function renderTable(tab) {
         <td>
           <span class="desc-preview" data-action="desc" data-id="${p.id}" style="font-size:0.78rem;color:var(--neon-cyan);display:block;max-width:200px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px">${descCorta}</span>
         </td>
-        <td><div class="action-btns">${actions}</div></td>
+        <td style="white-space:normal;vertical-align:top;padding:0.5rem 0.4rem"><div class="action-btns" style="display:flex;flex-direction:column;gap:0.35rem;min-width:130px">${actions}</div></td>
       </tr>
     `;
   }).join('');
