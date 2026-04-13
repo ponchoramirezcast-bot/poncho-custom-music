@@ -1,7 +1,10 @@
 /* ============================================================
    PONCHO CUSTOM MUSIC — Download Page
-   Only accessible when estado = 'pagado'
+   - Usa token_descarga (separado de token_escucha)
+   - Audio servido via proxy stream_audio modo=descarga
    ============================================================ */
+
+const STREAM_URL = 'https://vtbifrcnjrvqgwtjdood.supabase.co/functions/v1/stream_audio';
 
 function fmtTime(s) {
   if (isNaN(s) || !isFinite(s)) return '0:00';
@@ -11,7 +14,7 @@ function fmtTime(s) {
 function show(id) { document.getElementById(id)?.classList.remove('hidden'); }
 function hide(id) { document.getElementById(id)?.classList.add('hidden'); }
 
-function initPlayer(audio_url) {
+function initPlayer(streamUrl) {
   const audio   = document.getElementById('dlAudio');
   const playBtn = document.getElementById('dlPlayBtn');
   const bar     = document.getElementById('dlBar');
@@ -19,7 +22,7 @@ function initPlayer(audio_url) {
   const cur     = document.getElementById('dlCur');
   const dur     = document.getElementById('dlDur');
 
-  audio.src = audio_url;
+  audio.src = streamUrl;
   show('playerWrap');
 
   const playIcon  = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
@@ -52,8 +55,8 @@ function initPlayer(audio_url) {
 }
 
 async function loadPage() {
-  const token = getParam('token');
-  const card  = document.getElementById('downloadCard');
+  const token   = getParam('token');
+  const card    = document.getElementById('downloadCard');
   const content = document.getElementById('cardContent');
 
   hide('stateLoading');
@@ -70,13 +73,12 @@ async function loadPage() {
     return;
   }
 
-  // Show loading inside card
   content.innerHTML = `<div style="padding:2rem;display:flex;justify-content:center"><div class="spinner"></div></div>`;
 
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, audio_url, token_descarga, nombre_cancion')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion')
       .eq('token_descarga', token)
       .single();
 
@@ -96,19 +98,20 @@ async function loadPage() {
       content.innerHTML = `
         <div class="download-icon">⏳</div>
         <div class="download-title" style="color:var(--neon-yellow)">Pago Pendiente</div>
-        <p class="download-sub">Tu pedido aún no ha sido marcado como pagado. Una vez confirmado el pago, recibirás el link de descarga por correo.</p>
+        <p class="download-sub">Tu pedido aún no ha sido marcado como pagado. Recibirás el link de descarga por correo/WhatsApp una vez confirmado.</p>
         <div class="download-actions">
-          <a href="escuchar.html?token=${token}" class="btn-ghost">← Volver a escuchar</a>
+          <a href="index.html" class="btn-ghost">← Volver al inicio</a>
         </div>
       `;
       return;
     }
 
-    // ✅ Pagado — show download
-    initPlayer(data.audio_url);
+    // ✅ Pagado — stream via proxy
+    const streamUrl = `${STREAM_URL}?token=${token}&mode=descarga`;
+    initPlayer(streamUrl);
 
     const filename = data.nombre_cancion
-      ? `${data.nombre_cancion.replace(/\s+/g,'-')}.mp3`
+      ? `${data.nombre_cancion.replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}.mp3`
       : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}.mp3`;
 
     content.innerHTML = `
@@ -132,8 +135,9 @@ async function loadPage() {
     `;
 
     document.getElementById('dlBtn').addEventListener('click', () => {
+      // Descarga via proxy con Content-Disposition: attachment
       const a = document.createElement('a');
-      a.href = data.audio_url;
+      a.href     = streamUrl;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
