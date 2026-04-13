@@ -140,9 +140,11 @@ function renderTable(tab) {
       if (action === 'pago')    confirmarPago(id);
       if (action === 'desc')    openDescModal(id);
       if (action === 'delete')  eliminarPedido(id);
+      if (action === 'regen')   regenerarLink(id);
+      if (action === 'revocar') revocarAcceso(id);
       if (action === 'escuchar') {
         const p = allPedidos.find(x => x.id === id);
-        if (p) window.open(`escuchar.html?token=${p.token_descarga}`, '_blank');
+        if (p) window.open(`escuchar.html?token=${p.token_escucha || p.token_descarga}`, '_blank');
       }
     });
   });
@@ -151,16 +153,18 @@ function renderTable(tab) {
 function buildActions(p) {
   let html = '';
   if (p.estado === 'pendiente') {
-    html += `<button class="btn-xs btn-xs-cyan" data-action="upload" data-id="${p.id}">↑ Subir Audio</button>`;
+    html += `<button class="btn-xs btn-xs-cyan"   data-action="upload"   data-id="${p.id}">↑ Subir Audio</button>`;
   }
   if (p.estado === 'completado') {
-    html += `<button class="btn-xs btn-xs-green" data-action="pago" data-id="${p.id}">✓ Confirmar Pago</button>`;
-    html += `<button class="btn-xs btn-xs-cyan" data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
+    html += `<button class="btn-xs btn-xs-green"  data-action="pago"     data-id="${p.id}">✓ Confirmar Pago</button>`;
+    html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
   }
   if (p.estado === 'pagado') {
-    html += `<button class="btn-xs btn-xs-cyan" data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
+    html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar"  data-id="${p.id}">▶ Ver Link</button>`;
+    html += `<button class="btn-xs btn-xs-yellow" data-action="regen"     data-id="${p.id}">🔄 Regenerar Link</button>`;
+    html += `<button class="btn-xs btn-xs-pink"   data-action="revocar"   data-id="${p.id}">🚫 Revocar Acceso</button>`;
   }
-  html += `<button class="btn-xs" data-action="delete" data-id="${p.id}" style="border-color:rgba(255,0,110,0.4);color:var(--neon-pink)">✕ Eliminar</button>`;
+  html += `<button class="btn-xs btn-xs-pink"     data-action="delete"   data-id="${p.id}">✕ Eliminar</button>`;
   return html;
 }
 
@@ -419,6 +423,45 @@ function switchSection(section) {
   document.getElementById('secDemos').classList.toggle('active', !isPedidos);
 
   if (!isPedidos) loadDemos();
+}
+
+/* ---- Regenerar Link de Descarga -------------------------- */
+async function regenerarLink(pedidoId) {
+  const p = allPedidos.find(x => x.id === pedidoId);
+  if (!confirm(`¿Regenerar el link de descarga de ${p?.cliente_nombre || pedidoId.slice(0,8)}?\n\nEl link anterior quedará inválido.`)) return;
+
+  try {
+    // Generar nuevo token_descarga
+    const { error } = await sb.from('pedidos')
+      .update({ token_descarga: crypto.randomUUID() })
+      .eq('id', pedidoId);
+    if (error) throw error;
+
+    showToast('Link regenerado. Recarga para ver el nuevo link.', 'success');
+    await loadPedidos();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al regenerar: ' + (err.message || err), 'error');
+  }
+}
+
+/* ---- Revocar Acceso de Descarga -------------------------- */
+async function revocarAcceso(pedidoId) {
+  const p = allPedidos.find(x => x.id === pedidoId);
+  if (!confirm(`¿Revocar el acceso de descarga de ${p?.cliente_nombre || pedidoId.slice(0,8)}?\n\nEl pedido volverá a estado "completado" y el link de descarga dejará de funcionar.`)) return;
+
+  try {
+    const { error } = await sb.from('pedidos')
+      .update({ estado: 'completado', token_descarga: crypto.randomUUID() })
+      .eq('id', pedidoId);
+    if (error) throw error;
+
+    showToast('Acceso revocado. Pedido vuelve a "completado".', 'success');
+    await loadPedidos();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al revocar: ' + (err.message || err), 'error');
+  }
 }
 
 /* ---- Eliminar Pedido ------------------------------------- */

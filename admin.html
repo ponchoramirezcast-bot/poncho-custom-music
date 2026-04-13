@@ -116,24 +116,36 @@
       letter-spacing: 0.05em;
     }
 
-    .action-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .action-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      align-items: stretch;
+      min-width: 130px;
+    }
 
     .btn-xs {
-      padding: 0.35rem 0.75rem;
+      padding: 0.38rem 0.7rem;
       font-family: var(--font-label);
-      font-size: 0.58rem;
+      font-size: 0.56rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       border: 1px solid;
       transition: all var(--transition);
       cursor: none;
       white-space: nowrap;
+      text-align: center;
+      width: 100%;
     }
 
     .btn-xs-cyan  { border-color: var(--neon-cyan);  color: var(--neon-cyan);  background: transparent; }
     .btn-xs-cyan:hover { background: rgba(0,245,255,0.1); }
     .btn-xs-green { border-color: var(--neon-green); color: var(--neon-green); background: transparent; }
     .btn-xs-green:hover { background: rgba(57,255,20,0.1); }
+    .btn-xs-yellow { border-color: rgba(255,230,0,0.5); color: var(--neon-yellow); background: transparent; }
+    .btn-xs-yellow:hover { background: rgba(255,230,0,0.08); }
+    .btn-xs-pink  { border-color: rgba(255,0,110,0.5); color: var(--neon-pink); background: transparent; }
+    .btn-xs-pink:hover { background: rgba(255,0,110,0.08); }
     .btn-xs-dim   { border-color: var(--border); color: var(--text-dim); background: transparent; cursor: not-allowed !important; opacity: 0.5; }
 
     .no-pedidos {
