@@ -159,6 +159,11 @@
       margin-bottom: 1rem;
     }
 
+    #previewWall { display: none; }
+    #previewWall.visible { display: flex; }
+    #previewHint { display: none; }
+    #previewHint:not(.hidden) { display: flex; }
+
     @media (max-width: 480px) {
       .listen-card { padding: 1.5rem 1.1rem; }
     }
@@ -254,6 +259,22 @@
           </div>
         </div>
         <button class="btn-choose hidden" id="chooseBBtn">✓ Elegir Versión B</button>
+      </div>
+
+      <!-- Preview hint (solo si no ha pagado) -->
+      <div id="previewHint" class="hidden" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;padding:0.6rem 0.9rem;background:rgba(255,230,0,0.05);border:1px solid rgba(255,230,0,0.2)">
+        <span style="font-size:1rem">⏱</span>
+        <span style="font-family:var(--font-label);font-size:0.6rem;letter-spacing:0.08em;color:var(--neon-yellow)">PREVIEW DE 45 SEGUNDOS — Paga para escuchar completo y descargar</span>
+      </div>
+
+      <!-- Preview wall (aparece al llegar a 45s) -->
+      <div id="previewWall" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:1.5rem;background:rgba(2,4,8,0.95);border:1px solid rgba(255,0,110,0.4);text-align:center;margin-bottom:1rem">
+        <div style="font-size:2rem">🔒</div>
+        <div style="font-family:var(--font-title);font-size:0.85rem;letter-spacing:0.1em;color:var(--neon-pink)">PREVIEW TERMINADO</div>
+        <p style="font-size:0.85rem;color:var(--text-dim);line-height:1.6">Ya escuchaste los primeros 45 segundos.<br>Paga para escuchar la canción completa y descargarla.</p>
+        <a id="wallPayBtn" href="#" class="btn-secondary" target="_blank" rel="noopener" style="width:100%;justify-content:center">
+          💬 Ir a Pagar por WhatsApp
+        </a>
       </div>
 
       <!-- Actions -->

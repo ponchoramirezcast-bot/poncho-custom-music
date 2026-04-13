@@ -59,14 +59,24 @@ function validateStep1() {
   return ok;
 }
 
+function getTipoFinal() {
+  const tipo  = document.getElementById('tipoTema').value;
+  const otro  = document.getElementById('otroTipo').value.trim();
+  return tipo === 'Otro' && otro ? otro : tipo;
+}
+
 function validateStep2() {
-  const tipo = document.getElementById('tipoTema').value;
-  const desc = document.getElementById('descripcion').value.trim();
+  const tipo  = document.getElementById('tipoTema').value;
+  const otro  = document.getElementById('otroTipo').value.trim();
+  const desc  = document.getElementById('descripcion').value.trim();
   let ok = true;
 
-  showErr('err-tipo', !tipo);          if (!tipo)          ok = false;
-  showErr('err-mood', !selectedMood);  if (!selectedMood)  ok = false;
-  showErr('err-desc', desc.length < 80); if (desc.length < 80) ok = false;
+  showErr('err-tipo', !tipo);                   if (!tipo)          ok = false;
+  // Si eligió "Otro", debe escribir el estilo
+  const otroInvalid = tipo === 'Otro' && !otro;
+  showErr('err-otro-tipo', otroInvalid);         if (otroInvalid)    ok = false;
+  showErr('err-mood', !selectedMood);            if (!selectedMood)  ok = false;
+  showErr('err-desc', desc.length < 80);         if (desc.length < 80) ok = false;
 
   return ok;
 }
@@ -76,7 +86,7 @@ function buildSummary() {
   const nombre   = document.getElementById('nombre').value.trim();
   const email    = document.getElementById('email').value.trim();
   const telefono = document.getElementById('telefono').value.trim();
-  const tipo     = document.getElementById('tipoTema').value;
+  const tipo     = getTipoFinal();
   const desc     = document.getElementById('descripcion').value.trim();
 
   const planLabel = selectedPlan === 'plus' ? 'Plan Plus' : 'Plan Básico';
@@ -122,7 +132,7 @@ async function submitPedido() {
     cliente_nombre:   document.getElementById('nombre').value.trim(),
     cliente_email:    document.getElementById('email').value.trim(),
     cliente_telefono: document.getElementById('telefono').value.trim(),
-    tipo_tema:        document.getElementById('tipoTema').value,
+    tipo_tema:        getTipoFinal(),
     mood:             selectedMood,
     descripcion:      document.getElementById('descripcion').value.trim(),
     plan:             selectedPlan,
@@ -159,6 +169,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[data-plan="plus"]')?.classList.add('selected');
     document.querySelector('[data-plan="plus"] input')?.setAttribute('checked', 'true');
   }
+
+  /* Mostrar campo "Otro estilo" cuando lo seleccionan */
+  document.getElementById('tipoTema')?.addEventListener('change', e => {
+    const wrap = document.getElementById('otroTipoWrap');
+    if (e.target.value === 'Otro') {
+      wrap.classList.remove('hidden');
+      document.getElementById('otroTipo').focus();
+    } else {
+      wrap.classList.add('hidden');
+      document.getElementById('otroTipo').value = '';
+    }
+  });
 
   /* Step 1 → 2 */
   document.getElementById('next1')?.addEventListener('click', () => {

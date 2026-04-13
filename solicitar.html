@@ -251,8 +251,12 @@
           <option>Folk Metal</option>
           <option>Pop Romántico</option>
           <option>Rock en Español</option>
-          <option>Otro (especifica en el contexto)</option>
+          <option value="Otro">Otro (especifica abajo)</option>
         </select>
+        <div id="otroTipoWrap" class="hidden" style="margin-top:0.6rem">
+          <input type="text" id="otroTipo" placeholder="Ej: Norteño, Vallenato, Jazz, Salsa..." maxlength="60">
+          <span class="field-error" id="err-otro-tipo">Escribe el estilo musical.</span>
+        </div>
         <span class="field-error" id="err-tipo">Selecciona un género.</span>
       </div>
 
