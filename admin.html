@@ -226,6 +226,7 @@
     <div class="stat-card"><div><div class="stat-num" id="statPend" style="color:var(--neon-yellow)">—</div><div class="stat-label">Pendientes</div></div></div>
     <div class="stat-card"><div><div class="stat-num" id="statComp">—</div><div class="stat-label">Completados</div></div></div>
     <div class="stat-card"><div><div class="stat-num" id="statPag" style="color:var(--neon-green)">—</div><div class="stat-label">Pagados</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" id="statIngresos" style="color:var(--neon-cyan);font-size:1.1rem">—</div><div class="stat-label">Ingresos totales</div></div></div>
   </div>
 
   <!-- Tabs -->
@@ -240,6 +241,7 @@
   <div class="filter-tabs" style="margin-bottom:0;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:2rem">
     <button class="tab-btn active" data-section="pedidos" id="secPedidos">Pedidos</button>
     <button class="tab-btn" data-section="demos" id="secDemos">Demos</button>
+    <button class="tab-btn" data-section="clientes" id="secClientes">Clientes</button>
   </div>
 
   <!-- PEDIDOS SECTION -->
@@ -277,6 +279,37 @@
     </table>
   </div>
   </div><!-- /sectionPedidos -->
+
+  <!-- CLIENTES SECTION -->
+  <div id="sectionClientes" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <p class="section-label" style="margin:0">Clientes que han pagado</p>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.3rem">Úsalos para enviar promociones futuras por WhatsApp o correo.</p>
+      </div>
+      <button class="btn-primary" id="exportCsvBtn" style="padding:0.5rem 1.2rem;font-size:0.65rem">⬇ Exportar CSV</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>WhatsApp</th>
+            <th>Email</th>
+            <th>Tipo de Canción</th>
+            <th>Nombre Canción</th>
+            <th>Pagado el</th>
+            <th>Precio</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="clientesTbody">
+          <tr><td colspan="9" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- DEMOS SECTION -->
   <div id="sectionDemos" class="hidden">

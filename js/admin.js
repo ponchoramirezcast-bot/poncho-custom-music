@@ -89,14 +89,19 @@ async function loadPedidos() {
 }
 
 function updateStats() {
-  const pend = allPedidos.filter(p => p.estado === 'pendiente').length;
-  const comp = allPedidos.filter(p => p.estado === 'completado').length;
-  const pag  = allPedidos.filter(p => p.estado === 'pagado').length;
+  const pend     = allPedidos.filter(p => p.estado === 'pendiente').length;
+  const comp     = allPedidos.filter(p => p.estado === 'completado').length;
+  const pag      = allPedidos.filter(p => p.estado === 'pagado').length;
+  const ingresos = allPedidos
+    .filter(p => p.estado === 'pagado' && p.precio)
+    .reduce((sum, p) => sum + parseFloat(p.precio), 0);
 
-  document.getElementById('statTotal').textContent = allPedidos.length;
-  document.getElementById('statPend').textContent  = pend;
-  document.getElementById('statComp').textContent  = comp;
-  document.getElementById('statPag').textContent   = pag;
+  document.getElementById('statTotal').textContent    = allPedidos.length;
+  document.getElementById('statPend').textContent     = pend;
+  document.getElementById('statComp').textContent     = comp;
+  document.getElementById('statPag').textContent      = pag;
+  const ingEl = document.getElementById('statIngresos');
+  if (ingEl) ingEl.textContent = '$' + ingresos.toLocaleString('es-MX');
 }
 
 function renderTable(tab) {
@@ -109,19 +114,28 @@ function renderTable(tab) {
   }
 
   tbody.innerHTML = list.map(p => {
-    const actions = buildActions(p);
-    const addons  = Array.isArray(p.addons) && p.addons.length ? p.addons.join(', ') : '—';
+    const actions   = buildActions(p);
+    const addons    = Array.isArray(p.addons) && p.addons.length ? p.addons.join(', ') : '—';
     const descCorta = p.descripcion ? escHtml(p.descripcion.slice(0, 80)) + (p.descripcion.length > 80 ? '…' : '') : '—';
+
+    // Detectar link vencido: completado hace más de 72h
+    const vencido = p.estado === 'completado' && p.completado_en &&
+      (Date.now() - new Date(p.completado_en).getTime()) > 72 * 60 * 60 * 1000;
+
+    const estadoBadge = vencido
+      ? `<span class="badge badge-${p.estado}">${p.estado}</span> <span style="font-family:var(--font-label);font-size:0.52rem;letter-spacing:0.08em;color:var(--neon-yellow);border:1px solid rgba(255,230,0,0.4);padding:0.1rem 0.4rem">⏰ VENCIDO</span>`
+      : `<span class="badge badge-${p.estado}">${p.estado}</span>`;
+
     return `
-      <tr>
+      <tr style="${vencido ? 'background:rgba(255,230,0,0.03)' : ''}">
         <td class="id-cell">${p.id.slice(0, 8)}…</td>
         <td><strong>${escHtml(p.cliente_nombre)}</strong><br><span style="font-size:0.78rem;color:var(--text-dim)">${addons}</span></td>
-        <td class="col-email" style="font-size:0.82rem">${escHtml(p.cliente_email)}</td>
+        <td class="col-email" style="font-size:0.82rem">${escHtml(p.cliente_email || '—')}</td>
         <td class="col-telefono" style="font-size:0.82rem">${escHtml(p.cliente_telefono || '—')}</td>
         <td style="font-size:0.82rem">${escHtml(p.tipo_tema)}</td>
         <td class="col-mood" style="font-size:0.82rem">${escHtml(p.mood || '—')}</td>
         <td><span style="font-family:var(--font-label);font-size:0.62rem;color:var(--text-dim)">${p.plan || 'basico'}</span></td>
-        <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+        <td>${estadoBadge}</td>
         <td style="font-family:var(--font-label);font-size:0.78rem;color:var(--neon-cyan)">${p.precio ? '$' + p.precio : '—'}</td>
         <td style="font-size:0.78rem;color:var(--text-dim);white-space:nowrap">${formatDate(p.creado_en)}</td>
         <td>
@@ -140,7 +154,8 @@ function renderTable(tab) {
       if (action === 'pago')    confirmarPago(id);
       if (action === 'desc')    openDescModal(id);
       if (action === 'delete')  eliminarPedido(id);
-      if (action === 'regen')   regenerarLink(id);
+      if (action === 'regen')    regenerarLink(id);
+      if (action === 'reenviar') reenviarLink(id);
       if (action === 'revocar') revocarAcceso(id);
       if (action === 'escuchar') {
         const p = allPedidos.find(x => x.id === id);
@@ -156,8 +171,12 @@ function buildActions(p) {
     html += `<button class="btn-xs btn-xs-cyan"   data-action="upload"   data-id="${p.id}">↑ Subir Audio</button>`;
   }
   if (p.estado === 'completado') {
+    const vencido = p.completado_en && (Date.now() - new Date(p.completado_en).getTime()) > 72 * 60 * 60 * 1000;
     html += `<button class="btn-xs btn-xs-green"  data-action="pago"     data-id="${p.id}">✓ Confirmar Pago</button>`;
     html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
+    if (vencido) {
+      html += `<button class="btn-xs btn-xs-yellow" data-action="reenviar" data-id="${p.id}">📲 Reenviar Link</button>`;
+    }
   }
   if (p.estado === 'pagado') {
     html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar"  data-id="${p.id}">▶ Ver Link</button>`;
@@ -416,13 +435,140 @@ async function deleteDemo(demoId, audioPath) {
 
 /* ---- Section switching ----------------------------------- */
 function switchSection(section) {
-  const isPedidos = section === 'pedidos';
-  document.getElementById('sectionPedidos').classList.toggle('hidden', !isPedidos);
-  document.getElementById('sectionDemos').classList.toggle('hidden', isPedidos);
-  document.getElementById('secPedidos').classList.toggle('active', isPedidos);
-  document.getElementById('secDemos').classList.toggle('active', !isPedidos);
+  ['pedidos', 'demos', 'clientes'].forEach(s => {
+    document.getElementById(`section${s.charAt(0).toUpperCase() + s.slice(1)}`)?.classList.toggle('hidden', s !== section);
+    document.getElementById(`sec${s.charAt(0).toUpperCase() + s.slice(1)}`)?.classList.toggle('active', s === section);
+  });
+  if (section === 'demos')    loadDemos();
+  if (section === 'clientes') loadClientes();
+}
 
-  if (!isPedidos) loadDemos();
+/* ---- Clientes pagados ------------------------------------ */
+async function loadClientes() {
+  const tbody = document.getElementById('clientesTbody');
+  tbody.innerHTML = `<tr><td colspan="9" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>`;
+
+  try {
+    const { data, error } = await sb
+      .from('pedidos')
+      .select('id, cliente_nombre, cliente_telefono, cliente_email, tipo_tema, nombre_cancion, pagado_en, precio')
+      .eq('estado', 'pagado')
+      .order('pagado_en', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="no-pedidos">Aún no hay clientes pagados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((p, i) => {
+      const digits  = (p.cliente_telefono || '').replace(/\D/g, '');
+      const waPhone = digits.length === 10 ? `52${digits}` : digits;
+      const promoMsg = encodeURIComponent(
+        `¡Hola ${p.cliente_nombre}! 🎵 Tenemos nuevas canciones personalizadas disponibles en Poncho Custom Music. ¿Te interesa otra? Aquí puedes ver los demos: https://ponchoramirezcast-bot.github.io/poncho-custom-music/demos.html`
+      );
+      const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${promoMsg}` : '';
+
+      return `
+        <tr>
+          <td class="id-cell">${i + 1}</td>
+          <td><strong>${escHtml(p.cliente_nombre)}</strong></td>
+          <td style="font-family:var(--font-label);font-size:0.72rem">
+            ${p.cliente_telefono
+              ? `<a href="tel:${escHtml(p.cliente_telefono)}" style="color:var(--neon-cyan)">${escHtml(p.cliente_telefono)}</a>`
+              : '<span style="color:var(--text-dim)">—</span>'
+            }
+          </td>
+          <td style="font-size:0.78rem">
+            ${p.cliente_email
+              ? `<a href="mailto:${escHtml(p.cliente_email)}" style="color:var(--neon-cyan)">${escHtml(p.cliente_email)}</a>`
+              : '<span style="color:var(--text-dim)">—</span>'
+            }
+          </td>
+          <td style="font-size:0.82rem">${escHtml(p.tipo_tema || '—')}</td>
+          <td style="font-size:0.82rem;color:var(--text-dim)">${escHtml(p.nombre_cancion || '—')}</td>
+          <td style="font-family:var(--font-label);font-size:0.7rem;color:var(--text-dim);white-space:nowrap">${formatDate(p.pagado_en)}</td>
+          <td style="font-family:var(--font-label);font-size:0.78rem;color:var(--neon-cyan)">${p.precio ? '$' + p.precio : '—'}</td>
+          <td>
+            ${waUrl
+              ? `<a href="${waUrl}" target="_blank" class="btn-xs btn-xs-green" style="text-decoration:none;display:inline-block;padding:0.38rem 0.7rem">📲 Promo WA</a>`
+              : `<span class="btn-xs btn-xs-dim">Sin WA</span>`
+            }
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="9" class="no-pedidos" style="color:var(--neon-pink)">Error al cargar clientes.</td></tr>`;
+  }
+}
+
+function exportClientesCSV() {
+  const pagados = allPedidos.filter(p => p.estado === 'pagado');
+  if (!pagados.length) { showToast('No hay clientes pagados para exportar.', 'info'); return; }
+
+  const header = ['Nombre', 'WhatsApp', 'Email', 'Tipo de Canción', 'Nombre Canción', 'Precio', 'Pagado el'];
+  const rows = pagados.map(p => [
+    p.cliente_nombre || '',
+    p.cliente_telefono || '',
+    p.cliente_email || '',
+    p.tipo_tema || '',
+    p.nombre_cancion || '',
+    p.precio || '',
+    p.pagado_en ? new Date(p.pagado_en).toLocaleDateString('es-MX') : '',
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`));
+
+  const csvContent = [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `clientes-poncho-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado.', 'success');
+}
+
+/* ---- Reenviar Link vencido ------------------------------- */
+async function reenviarLink(pedidoId) {
+  const p = allPedidos.find(x => x.id === pedidoId);
+  if (!p) return;
+
+  // Generar nuevo token_escucha
+  const newToken = crypto.randomUUID();
+  try {
+    const { error } = await sb.from('pedidos')
+      .update({ token_escucha: newToken, completado_en: new Date().toISOString() })
+      .eq('id', pedidoId);
+    if (error) throw error;
+
+    const siteUrl   = 'https://ponchoramirezcast-bot.github.io/poncho-custom-music';
+    const listenUrl = `${siteUrl}/escuchar.html?token=${newToken}`;
+
+    if (p.cliente_telefono) {
+      const digits     = p.cliente_telefono.replace(/\D/g, '');
+      const waPhone    = digits.length === 10 ? `52${digits}` : digits;
+      const clientMsg  = encodeURIComponent(
+        `¡Hola ${p.cliente_nombre}! 🎵 Te reenvío el link de tu canción personalizada.\n\n` +
+        `Escúchala aquí:\n${listenUrl}\n\n¿Tienes alguna duda? Con gusto te ayudo.`
+      );
+      const waUrl = `https://wa.me/${waPhone}?text=${clientMsg}`;
+      window.open(waUrl, '_blank');
+    } else {
+      showToast('Link renovado. El cliente no tiene WhatsApp registrado.', 'info');
+    }
+
+    await loadPedidos();
+    showToast('Link renovado y listo para reenviar.', 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Error al reenviar: ' + (err.message || err), 'error');
+  }
 }
 
 /* ---- Regenerar Link de Descarga -------------------------- */
@@ -526,8 +672,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refreshBtn')?.addEventListener('click', loadPedidos);
 
   // Section switcher
-  document.getElementById('secPedidos')?.addEventListener('click', () => switchSection('pedidos'));
-  document.getElementById('secDemos')?.addEventListener('click',   () => switchSection('demos'));
+  document.getElementById('secPedidos')?.addEventListener('click',   () => switchSection('pedidos'));
+  document.getElementById('secDemos')?.addEventListener('click',     () => switchSection('demos'));
+  document.getElementById('secClientes')?.addEventListener('click',  () => switchSection('clientes'));
+
+  // Export CSV
+  document.getElementById('exportCsvBtn')?.addEventListener('click', exportClientesCSV);
 
   // Pedido status tabs
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
