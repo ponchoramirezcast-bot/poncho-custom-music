@@ -118,7 +118,7 @@ async function loadPedido() {
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, audio_path, audio_path_2, token_escucha, token_descarga, precio, version_elegida')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, audio_path, audio_path_2, token_escucha, token_descarga, precio, version_elegida, link_pago, calificacion')
       .eq('token_escucha', token)
       .single();
 
@@ -178,9 +178,25 @@ async function loadPedido() {
         `Hola Poncho, quiero pagar mi tema personalizado.\nID: ${data.id}\nPrecio: $${data.precio || '—'} MXN${versionStr}`
       );
       const waUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${waMsg}`;
-      document.getElementById('waPayBtn').href  = waUrl;
-      const wallBtn = document.getElementById('wallPayBtn');
-      if (wallBtn) wallBtn.href = waUrl;
+      document.getElementById('waPayBtn').href = waUrl;
+
+      // Botón Conekta: mostrarlo si tenemos link_pago
+      if (data.link_pago) {
+        const conektaBtn = document.getElementById('conektaPayBtn');
+        if (conektaBtn) {
+          conektaBtn.href = data.link_pago;
+          conektaBtn.classList.remove('hidden');
+        }
+        // El wallPayBtn también apunta a Conekta si está disponible
+        const wallBtn = document.getElementById('wallPayBtn');
+        if (wallBtn) {
+          wallBtn.href        = data.link_pago;
+          wallBtn.textContent = '💳 Ir a Pagar con Tarjeta';
+        }
+      } else {
+        const wallBtn = document.getElementById('wallPayBtn');
+        if (wallBtn) wallBtn.href = waUrl;
+      }
     }
 
   } catch (err) {

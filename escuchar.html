@@ -285,13 +285,19 @@
           <div class="payment-info mb-md">
             <div class="payment-title">⚡ Tu tema está listo — escúchalo arriba</div>
             <p class="payment-desc">
-              Para descargar el archivo, realiza el pago y Poncho activará tu descarga.
+              Para descargar el archivo, realiza el pago y tu descarga se activa automáticamente.
             </p>
           </div>
 
+          <!-- Botón Conekta (mostrado cuando hay link_pago) -->
+          <a id="conektaPayBtn" href="#" class="btn-primary hidden" target="_blank" rel="noopener"
+             style="justify-content:center;margin-bottom:0.65rem;width:100%;box-sizing:border-box">
+            💳 Pagar con Tarjeta
+          </a>
+
           <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
             <a id="waPayBtn" href="#" class="btn-secondary" target="_blank" rel="noopener">
-              💬 Ir a Pagar por WhatsApp
+              💬 Pagar por WhatsApp
             </a>
             <button class="btn-disabled" disabled style="flex:1;min-width:120px">
               ⬇ Descargar (paga primero)
