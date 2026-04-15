@@ -7,6 +7,7 @@ const STORAGE_BUCKET = 'audios';
 let allPedidos = [];
 let currentTab = 'all';
 let uploadPedidoId = null;
+let isReplaceMode  = false;  // true = reemplazar audio sin renotificar
 
 /* ---- Auth ------------------------------------------------ */
 async function checkAuth() {
@@ -172,13 +173,14 @@ function renderTable(tab) {
   tbody.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', () => {
       const { action, id } = btn.dataset;
-      if (action === 'upload')  openUploadModal(id);
-      if (action === 'pago')    confirmarPago(id);
-      if (action === 'desc')    openDescModal(id);
-      if (action === 'delete')  eliminarPedido(id);
+      if (action === 'upload')   openUploadModal(id);
+      if (action === 'replace')  openReplaceModal(id);
+      if (action === 'pago')     confirmarPago(id);
+      if (action === 'desc')     openDescModal(id);
+      if (action === 'delete')   eliminarPedido(id);
       if (action === 'regen')    regenerarLink(id);
       if (action === 'reenviar') reenviarLink(id);
-      if (action === 'revocar') revocarAcceso(id);
+      if (action === 'revocar')  revocarAcceso(id);
       if (action === 'escuchar') {
         const p = allPedidos.find(x => x.id === id);
         if (p) window.open(`escuchar.html?token=${p.token_escucha || p.token_descarga}`, '_blank');
@@ -196,12 +198,14 @@ function buildActions(p) {
     const vencido = p.completado_en && (Date.now() - new Date(p.completado_en).getTime()) > 72 * 60 * 60 * 1000;
     html += `<button class="btn-xs btn-xs-green"  data-action="pago"     data-id="${p.id}">✓ Confirmar Pago</button>`;
     html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
+    html += `<button class="btn-xs btn-xs-yellow" data-action="replace"  data-id="${p.id}">🔄 Reemplazar Audio</button>`;
     if (vencido) {
       html += `<button class="btn-xs btn-xs-yellow" data-action="reenviar" data-id="${p.id}">📲 Reenviar Link</button>`;
     }
   }
   if (p.estado === 'pagado') {
     html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar"  data-id="${p.id}">▶ Ver Link</button>`;
+    html += `<button class="btn-xs btn-xs-yellow" data-action="replace"   data-id="${p.id}">🔄 Reemplazar Audio</button>`;
     html += `<button class="btn-xs btn-xs-yellow" data-action="regen"     data-id="${p.id}">🔄 Regenerar Link</button>`;
     html += `<button class="btn-xs btn-xs-pink"   data-action="revocar"   data-id="${p.id}">🚫 Revocar Acceso</button>`;
   }
@@ -210,7 +214,29 @@ function buildActions(p) {
 }
 
 /* ---- Upload Modal ---------------------------------------- */
+function openReplaceModal(pedidoId) {
+  isReplaceMode = true;
+  uploadPedidoId = pedidoId;
+  const p = allPedidos.find(x => x.id === pedidoId);
+  if (p) {
+    document.getElementById('uploadPedidoInfo').textContent =
+      `⚠️ REEMPLAZAR AUDIO — ${p.cliente_nombre} | ${p.tipo_tema} | ${p.mood || ''}`;
+    document.getElementById('finalPrecio').value = p.precio || '';
+    document.getElementById('nombreCancion').value = p.nombre_cancion || '';
+  }
+  document.getElementById('selectedFileName').textContent = '';
+  document.getElementById('selectedFileName2').textContent = '';
+  document.getElementById('audioFile').value = '';
+  document.getElementById('audioFile2').value = '';
+  document.getElementById('uploadProgress').classList.add('hidden');
+  document.getElementById('uploadProgressFill').style.width = '0%';
+  // Cambiar texto del botón para indicar modo reemplazo
+  document.getElementById('uploadText').textContent = 'Reemplazar Audio';
+  document.getElementById('uploadModal').classList.add('open');
+}
+
 function openUploadModal(pedidoId) {
+  isReplaceMode = false;
   uploadPedidoId = pedidoId;
   const p = allPedidos.find(x => x.id === pedidoId);
   if (p) {
@@ -225,12 +251,15 @@ function openUploadModal(pedidoId) {
   document.getElementById('audioFile2').value = '';
   document.getElementById('uploadProgress').classList.add('hidden');
   document.getElementById('uploadProgressFill').style.width = '0%';
+  document.getElementById('uploadText').textContent = 'Subir Audio';
   document.getElementById('uploadModal').classList.add('open');
 }
 
 function closeUploadModal() {
   document.getElementById('uploadModal').classList.remove('open');
   uploadPedidoId = null;
+  isReplaceMode  = false;
+  document.getElementById('uploadText').textContent = 'Subir Audio';
 }
 
 async function doUpload() {
@@ -273,17 +302,28 @@ async function doUpload() {
     }
     progressFill.style.width = '70%';
 
-    // 3. Call edge function
-    await callFunction('notificar_audio_listo', {
-      pedido_id:      uploadPedidoId,
-      audio_path:     path1,
-      audio_path_2:   path2,
-      nombre_cancion: nombre || null,
-      precio,
-    });
+    if (isReplaceMode) {
+      // Solo reemplazar archivos en BD, sin notificar al cliente
+      const updateFields = { audio_path: path1 };
+      if (path2) updateFields.audio_path_2 = path2;
+      if (nombre) updateFields.nombre_cancion = nombre;
+      const { error: replErr } = await sb.from('pedidos').update(updateFields).eq('id', uploadPedidoId);
+      if (replErr) throw replErr;
+      progressFill.style.width = '100%';
+      showToast('Audio reemplazado correctamente. El cliente escuchará la nueva versión.', 'success');
+    } else {
+      // Flujo normal: notificar al cliente
+      await callFunction('notificar_audio_listo', {
+        pedido_id:      uploadPedidoId,
+        audio_path:     path1,
+        audio_path_2:   path2,
+        nombre_cancion: nombre || null,
+        precio,
+      });
+      progressFill.style.width = '100%';
+      showToast(file2 ? 'Dos versiones subidas. Cliente notificado.' : 'Audio subido. Cliente notificado.', 'success');
+    }
 
-    progressFill.style.width = '100%';
-    showToast(file2 ? 'Dos versiones subidas. Cliente notificado.' : 'Audio subido. Cliente notificado.', 'success');
     closeUploadModal();
     await loadPedidos();
 
