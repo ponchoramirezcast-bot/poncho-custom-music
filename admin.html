@@ -248,6 +248,7 @@
     <button class="tab-btn active" data-section="pedidos" id="secPedidos">Pedidos</button>
     <button class="tab-btn" data-section="demos" id="secDemos">Demos</button>
     <button class="tab-btn" data-section="clientes" id="secClientes">Clientes</button>
+    <button class="tab-btn" data-section="generos" id="secGeneros">Géneros</button>
   </div>
 
   <!-- PEDIDOS SECTION -->
@@ -342,6 +343,46 @@
     </div>
   </div>
 
+  <!-- GÉNEROS SECTION -->
+  <div id="sectionGeneros" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <p class="section-label" style="margin:0">Géneros musicales</p>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.3rem">Estos géneros aparecen en el formulario de pedido y en las demos.</p>
+      </div>
+      <button class="btn-primary" id="addGeneroBtn" style="padding:0.5rem 1.2rem;font-size:0.65rem">+ Agregar Género</button>
+    </div>
+    <!-- Add genre inline form -->
+    <div id="addGeneroForm" class="hidden" style="background:var(--dark-card);border:1px solid var(--border);padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group" style="margin:0;flex:1;min-width:200px">
+        <label for="newGeneroNombre" style="font-size:0.65rem">Nombre del género *</label>
+        <input type="text" id="newGeneroNombre" placeholder="Ej: Norteño, Salsa, Vallenato..." maxlength="60">
+      </div>
+      <div class="form-group" style="margin:0;width:100px">
+        <label for="newGeneroOrden" style="font-size:0.65rem">Orden</label>
+        <input type="number" id="newGeneroOrden" value="10" min="0">
+      </div>
+      <button class="btn-primary" id="saveGeneroBtn" style="padding:0.5rem 1.2rem;font-size:0.65rem;white-space:nowrap">Guardar</button>
+      <button class="btn-ghost" id="cancelGeneroBtn" style="padding:0.5rem 1rem;font-size:0.65rem">Cancelar</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Género</th>
+            <th>Orden</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="generosTbody">
+          <tr><td colspan="5" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div><!-- /dashboard -->
 
 <!-- Add Demo Modal -->
@@ -360,16 +401,6 @@
         <label for="demoTipo">Tipo de música *</label>
         <select id="demoTipo">
           <option value="" disabled selected>— Elige —</option>
-          <option>Cumbia Norteña</option>
-          <option>Banda Sinaloense</option>
-          <option>Regional Mexicano</option>
-          <option>Hip Hop / Trap</option>
-          <option>Heavy Metal</option>
-          <option>Country Rock</option>
-          <option>Folk Metal</option>
-          <option>Pop Romántico</option>
-          <option>Rock en Español</option>
-          <option>Otro</option>
         </select>
       </div>
       <div class="form-group">

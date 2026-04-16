@@ -159,8 +159,27 @@ async function submitPedido() {
   }
 }
 
+/* ---- Cargar géneros dinámico ----------------------------- */
+async function loadGenerosIntoForm() {
+  const sel = document.getElementById('tipoTema');
+  if (!sel) return;
+  try {
+    const { data } = await sb.from('generos').select('nombre').eq('activo', true).order('orden', { ascending: true });
+    sel.innerHTML = `<option value="" disabled selected>— Elige el género —</option>`;
+    (data || []).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.nombre === 'Otro' ? 'Otro' : g.nombre;
+      opt.textContent = g.nombre === 'Otro' ? 'Otro (especifica abajo)' : g.nombre;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Error cargando géneros:', e);
+  }
+}
+
 /* ---- Init ------------------------------------------------ */
 document.addEventListener('DOMContentLoaded', () => {
+  loadGenerosIntoForm();
   // Pre-select plan from URL param
   const urlPlan = getParam('plan');
   if (urlPlan === 'plus') {

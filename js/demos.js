@@ -179,7 +179,26 @@ async function loadDemos() {
 }
 
 /* ---- Filter bar events ----------------------------------- */
-document.addEventListener('DOMContentLoaded', () => {
+async function loadFilterButtons() {
+  const bar = document.getElementById('filterBar');
+  if (!bar) return;
+  try {
+    const { data } = await sb.from('generos').select('nombre').eq('activo', true).order('orden', { ascending: true });
+    (data || []).forEach(g => {
+      if (g.nombre === 'Otro') return; // no mostrar "Otro" como filtro
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.filter = g.nombre;
+      btn.textContent = g.nombre;
+      bar.appendChild(btn);
+    });
+  } catch (e) {
+    console.error('Error cargando filtros:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadFilterButtons();
   loadDemos();
 
   document.getElementById('filterBar')?.addEventListener('click', e => {

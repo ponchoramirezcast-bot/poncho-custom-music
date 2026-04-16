@@ -395,14 +395,27 @@ async function loadDemos() {
   }
 }
 
-function openAddDemoModal() {
+async function fillGeneroSelect(selectId, placeholderText = '— Elige —') {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const { data } = await sb.from('generos').select('nombre').eq('activo', true).order('orden', { ascending: true });
+  sel.innerHTML = `<option value="" disabled selected>${placeholderText}</option>`;
+  (data || []).forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.nombre;
+    opt.textContent = g.nombre;
+    sel.appendChild(opt);
+  });
+}
+
+async function openAddDemoModal() {
   document.getElementById('demoNombre').value   = '';
-  document.getElementById('demoTipo').value     = '';
   document.getElementById('demoOrden').value    = '0';
   document.getElementById('demoFileName').textContent = '';
   document.getElementById('demoAudioFile').value = '';
   document.getElementById('demoUploadProgress').classList.add('hidden');
   document.getElementById('demoUploadFill').style.width = '0%';
+  await fillGeneroSelect('demoTipo');
   document.getElementById('addDemoModal').classList.add('open');
 }
 
@@ -497,12 +510,91 @@ async function deleteDemo(demoId, audioPath) {
 
 /* ---- Section switching ----------------------------------- */
 function switchSection(section) {
-  ['pedidos', 'demos', 'clientes'].forEach(s => {
+  ['pedidos', 'demos', 'clientes', 'generos'].forEach(s => {
     document.getElementById(`section${s.charAt(0).toUpperCase() + s.slice(1)}`)?.classList.toggle('hidden', s !== section);
     document.getElementById(`sec${s.charAt(0).toUpperCase() + s.slice(1)}`)?.classList.toggle('active', s === section);
   });
   if (section === 'demos')    loadDemos();
   if (section === 'clientes') loadClientes();
+  if (section === 'generos')  loadGeneros();
+}
+
+/* ---- Géneros -------------------------------------------- */
+async function loadGeneros() {
+  const tbody = document.getElementById('generosTbody');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" class="no-pedidos"><div class="spinner spinner-sm" style="margin:0 auto"></div></td></tr>`;
+
+  try {
+    const { data, error } = await sb
+      .from('generos')
+      .select('*')
+      .order('orden', { ascending: true });
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="no-pedidos">No hay géneros aún.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((g, i) => `
+      <tr>
+        <td class="id-cell">${i + 1}</td>
+        <td><strong>${g.nombre}</strong></td>
+        <td>${g.orden}</td>
+        <td><span class="badge ${g.activo ? 'badge-pagado' : 'badge-pendiente'}">${g.activo ? 'Activo' : 'Inactivo'}</span></td>
+        <td style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn-xs ${g.activo ? 'btn-xs-yellow' : 'btn-xs-green'}" data-genre-toggle="${g.id}" data-activo="${g.activo}">
+            ${g.activo ? '⏸ Desactivar' : '▶ Activar'}
+          </button>
+          <button class="btn-xs btn-xs-pink" data-genre-delete="${g.id}" data-nombre="${g.nombre}">✕ Eliminar</button>
+        </td>
+      </tr>
+    `).join('');
+
+    // Toggle activo
+    tbody.querySelectorAll('[data-genre-toggle]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id     = btn.dataset.genreToggle;
+        const activo = btn.dataset.activo === 'true';
+        const { error } = await sb.from('generos').update({ activo: !activo }).eq('id', id);
+        if (error) { showToast('Error al actualizar.', 'error'); return; }
+        loadGeneros();
+      });
+    });
+
+    // Delete
+    tbody.querySelectorAll('[data-genre-delete]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`¿Eliminar el género "${btn.dataset.nombre}"? Los pedidos existentes con este género no se verán afectados.`)) return;
+        const { error } = await sb.from('generos').delete().eq('id', btn.dataset.genreDelete);
+        if (error) { showToast('Error al eliminar.', 'error'); return; }
+        showToast('Género eliminado.', 'success');
+        loadGeneros();
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="5" class="no-pedidos" style="color:var(--neon-pink)">Error al cargar géneros.</td></tr>`;
+  }
+}
+
+async function saveGenero() {
+  const nombre = document.getElementById('newGeneroNombre').value.trim();
+  const orden  = parseInt(document.getElementById('newGeneroOrden').value) || 10;
+  if (!nombre) { showToast('Escribe el nombre del género.', 'error'); return; }
+
+  const { error } = await sb.from('generos').insert({ nombre, orden, activo: true });
+  if (error) {
+    showToast(error.message.includes('unique') ? 'Ese género ya existe.' : 'Error al guardar.', 'error');
+    return;
+  }
+  showToast(`Género "${nombre}" agregado.`, 'success');
+  document.getElementById('newGeneroNombre').value = '';
+  document.getElementById('newGeneroOrden').value  = '10';
+  document.getElementById('addGeneroForm').classList.add('hidden');
+  loadGeneros();
 }
 
 /* ---- Clientes pagados ------------------------------------ */
@@ -737,6 +829,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('secPedidos')?.addEventListener('click',   () => switchSection('pedidos'));
   document.getElementById('secDemos')?.addEventListener('click',     () => switchSection('demos'));
   document.getElementById('secClientes')?.addEventListener('click',  () => switchSection('clientes'));
+  document.getElementById('secGeneros')?.addEventListener('click',   () => switchSection('generos'));
+
+  // Géneros form
+  document.getElementById('addGeneroBtn')?.addEventListener('click', () => {
+    document.getElementById('addGeneroForm').classList.remove('hidden');
+    document.getElementById('newGeneroNombre').focus();
+  });
+  document.getElementById('cancelGeneroBtn')?.addEventListener('click', () => {
+    document.getElementById('addGeneroForm').classList.add('hidden');
+  });
+  document.getElementById('saveGeneroBtn')?.addEventListener('click', saveGenero);
 
   // Export CSV
   document.getElementById('exportCsvBtn')?.addEventListener('click', exportClientesCSV);
