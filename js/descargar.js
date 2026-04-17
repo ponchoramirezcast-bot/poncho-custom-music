@@ -93,12 +93,12 @@ async function loadPage() {
       return;
     }
 
-    if (data.estado !== 'pagado') {
+    if (data.estado !== 'completado') {
       card.classList.add('blocked-card');
       content.innerHTML = `
-        <div class="download-icon">⏳</div>
-        <div class="download-title" style="color:var(--neon-yellow)">Pago Pendiente</div>
-        <p class="download-sub">Tu pedido aún no ha sido marcado como pagado. Recibirás el link de descarga por correo/WhatsApp una vez confirmado.</p>
+        <div class="download-icon">🎛️</div>
+        <div class="download-title" style="color:var(--neon-yellow)">Tu canción está en producción</div>
+        <p class="download-sub">Ya recibimos tu pago. Estamos produciendo tu canción y te avisamos por correo y WhatsApp cuando esté lista para descargar.</p>
         <div class="download-actions">
           <a href="index.html" class="btn-ghost">← Volver al inicio</a>
         </div>
