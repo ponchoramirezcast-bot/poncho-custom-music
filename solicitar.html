@@ -401,8 +401,53 @@
   </div><!-- /form-container -->
 </section>
 
+<!-- Testimonios -->
+<section id="solicitar-testimonios" style="display:none;padding:4rem 2rem 6rem;max-width:1000px;margin:0 auto">
+  <p class="section-label" style="text-align:center">Lo Que Dicen</p>
+  <h2 class="section-title" style="text-align:center;font-size:1.4rem">Clientes <span class="accent">Felices</span></h2>
+  <div id="solTestGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem"></div>
+</section>
+
 <script src="js/supabase-config.js"></script>
 <script src="js/main.js"></script>
 <script src="js/solicitar.js"></script>
+<script>
+(async function loadSolTestimonials() {
+  try {
+    const { data } = await sb.from('pedidos')
+      .select('cliente_nombre, tipo_tema, calificacion, calificacion_comentario')
+      .gte('calificacion', 4)
+      .not('calificacion_comentario', 'is', null)
+      .in('estado', ['completado', 'pagado'])
+      .order('calificacion', { ascending: false })
+      .limit(6);
+
+    if (!data || data.length < 1) return;
+
+    const section = document.getElementById('solicitar-testimonios');
+    const grid    = document.getElementById('solTestGrid');
+    if (data.length < 3) grid.style.gridTemplateColumns = data.length === 1 ? '1fr' : 'repeat(2,1fr)';
+
+    grid.innerHTML = data.map(t => {
+      const stars = '★'.repeat(t.calificacion) + '☆'.repeat(5 - t.calificacion);
+      const parts = (t.cliente_nombre || '').trim().split(' ');
+      const name  = parts.length > 1 ? `${parts[0]} ${parts[1].charAt(0)}.` : parts[0];
+      return `
+        <div style="padding:1.2rem;border:1px solid var(--border);background:var(--dark-card);position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple))"></div>
+          <div style="font-size:1rem;color:var(--neon-yellow);margin-bottom:0.6rem">${stars}</div>
+          <p style="font-size:0.88rem;color:#ccc;line-height:1.6;font-style:italic;margin-bottom:0.8rem">"${t.calificacion_comentario}"</p>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <span style="font-family:var(--font-label);font-size:0.6rem;letter-spacing:0.08em;color:#fff">${name}</span>
+            <span class="player-tag" style="font-size:0.52rem;padding:0.12rem 0.45rem">${t.tipo_tema}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    section.style.display = 'block';
+  } catch(e) { console.error('Testimonials solicitar:', e); }
+})();
+</script>
 </body>
 </html>

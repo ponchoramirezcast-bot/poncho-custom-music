@@ -697,8 +697,8 @@
         .select('cliente_nombre, tipo_tema, calificacion, calificacion_comentario')
         .gte('calificacion', 4)
         .not('calificacion_comentario', 'is', null)
-        .eq('estado', 'pagado')
-        .order('pagado_en', { ascending: false })
+        .in('estado', ['completado', 'pagado'])
+        .order('calificacion', { ascending: false })
         .limit(6);
 
       if (!data || data.length < 2) return; // Need at least 2 to look good
