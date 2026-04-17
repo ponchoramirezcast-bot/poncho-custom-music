@@ -143,12 +143,34 @@ async function submitPedido() {
   try {
     const result = await callFunction('crear_pedido', payload);
 
-    // Show success screen
+    // Mostrar pantalla de pago
     document.querySelector('.step-indicator').style.display = 'none';
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
     const success = document.getElementById('successScreen');
     success.classList.add('active');
     document.getElementById('pedidoId').textContent = result.pedido_id || '—';
+
+    // Botón Conekta
+    const conektaBtn = document.getElementById('conektaPayLink');
+    if (result.link_pago && conektaBtn) {
+      conektaBtn.href = result.link_pago;
+      conektaBtn.style.display = 'flex';
+      conektaBtn.style.alignItems = 'center';
+      conektaBtn.style.justifyContent = 'center';
+    }
+
+    // Botón WhatsApp
+    const waBtn = document.getElementById('waPayLink');
+    if (waBtn) {
+      const versionStr = payload.addons?.length ? ` | Extras: ${payload.addons.join(', ')}` : '';
+      const waMsg = encodeURIComponent(
+        `Hola Poncho, quiero pagar mi canción personalizada.\n` +
+        `ID: ${result.pedido_id}\n` +
+        `Tipo: ${payload.tipo_tema} | Plan: ${payload.plan}${versionStr}\n` +
+        `Precio: $${payload.precio} MXN`
+      );
+      waBtn.href = `https://wa.me/5214497573058?text=${waMsg}`;
+    }
 
   } catch (err) {
     console.error(err);

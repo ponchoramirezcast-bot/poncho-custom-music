@@ -192,22 +192,23 @@ function renderTable(tab) {
 function buildActions(p) {
   let html = '';
   if (p.estado === 'pendiente') {
+    // Esperando pago (WhatsApp/transferencia)
+    html += `<button class="btn-xs btn-xs-green"  data-action="pago"     data-id="${p.id}">✓ Confirmar Pago</button>`;
+  }
+  if (p.estado === 'pagado') {
+    // Pago confirmado — listo para producir
     html += `<button class="btn-xs btn-xs-cyan"   data-action="upload"   data-id="${p.id}">↑ Subir Audio</button>`;
   }
   if (p.estado === 'completado') {
+    // Audio entregado
     const vencido = p.completado_en && (Date.now() - new Date(p.completado_en).getTime()) > 72 * 60 * 60 * 1000;
-    html += `<button class="btn-xs btn-xs-green"  data-action="pago"     data-id="${p.id}">✓ Confirmar Pago</button>`;
     html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar" data-id="${p.id}">▶ Ver Link</button>`;
     html += `<button class="btn-xs btn-xs-yellow" data-action="replace"  data-id="${p.id}">🔄 Reemplazar Audio</button>`;
     if (vencido) {
       html += `<button class="btn-xs btn-xs-yellow" data-action="reenviar" data-id="${p.id}">📲 Reenviar Link</button>`;
     }
-  }
-  if (p.estado === 'pagado') {
-    html += `<button class="btn-xs btn-xs-cyan"   data-action="escuchar"  data-id="${p.id}">▶ Ver Link</button>`;
-    html += `<button class="btn-xs btn-xs-yellow" data-action="replace"   data-id="${p.id}">🔄 Reemplazar Audio</button>`;
-    html += `<button class="btn-xs btn-xs-yellow" data-action="regen"     data-id="${p.id}">🔄 Regenerar Link</button>`;
-    html += `<button class="btn-xs btn-xs-pink"   data-action="revocar"   data-id="${p.id}">🚫 Revocar Acceso</button>`;
+    html += `<button class="btn-xs btn-xs-yellow" data-action="regen"    data-id="${p.id}">🔄 Regenerar Link</button>`;
+    html += `<button class="btn-xs btn-xs-pink"   data-action="revocar"  data-id="${p.id}">🚫 Revocar Acceso</button>`;
   }
   html += `<button class="btn-xs btn-xs-pink"     data-action="delete"   data-id="${p.id}">✕ Eliminar</button>`;
   return html;

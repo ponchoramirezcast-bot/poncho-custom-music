@@ -132,10 +132,11 @@ async function loadPedido() {
     badge.textContent = data.estado.charAt(0).toUpperCase() + data.estado.slice(1);
 
     if (data.estado === 'pendiente') { showState('statePendiente'); return; }
+    if (data.estado === 'pagado')    { showState('statePendiente'); return; } // pagado = aún en producción
 
     showState('statePlayer');
 
-    const isPaid = data.estado === 'pagado';
+    const isPaid = true; // pago anticipado: siempre acceso completo
 
     // URLs del proxy — nunca exponen el archivo real
     const streamA = `${STREAM_URL}?token=${token}&mode=escucha&v=1`;

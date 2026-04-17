@@ -363,20 +363,32 @@
       </div>
     </div>
 
-    <!-- ======= SUCCESS ======= -->
+    <!-- ======= SUCCESS / PAGO ======= -->
     <div id="successScreen">
       <div class="success-icon">🎵</div>
-      <div class="success-title">¡Pedido Enviado!</div>
+      <div class="success-title">¡Solicitud Recibida!</div>
       <p class="success-sub">
-        Recibimos tu solicitud. Revisa tu correo para la confirmación.
-        Te notificaremos cuando tu tema esté listo para escuchar.
+        Completa tu pago para que comencemos a producir tu canción.
+        Una vez confirmado, tendrás tu tema listo en 24–48 horas.
       </p>
-      <p style="font-family:var(--font-label);font-size:0.65rem;letter-spacing:0.1em;color:var(--text-dim)">
+
+      <!-- Botón Conekta (tarjeta) -->
+      <a id="conektaPayLink" href="#" target="_blank" rel="noopener"
+         style="display:none;background:var(--neon-cyan);color:#000;font-family:var(--font-title);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;padding:0.85rem 2rem;text-decoration:none;width:100%;max-width:320px;text-align:center;box-sizing:border-box">
+        💳 PAGAR CON TARJETA
+      </a>
+
+      <!-- Botón WhatsApp -->
+      <a id="waPayLink" href="#" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;justify-content:center;gap:0.5rem;background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.25);color:var(--neon-cyan);font-family:var(--font-label);font-size:0.68rem;letter-spacing:0.1em;padding:0.75rem 2rem;text-decoration:none;width:100%;max-width:320px;text-align:center;box-sizing:border-box">
+        📲 PAGAR POR WHATSAPP / TRANSFERENCIA
+      </a>
+
+      <p style="font-family:var(--font-label);font-size:0.6rem;letter-spacing:0.08em;color:var(--text-dim);margin-top:0.5rem">
         ID: <span id="pedidoId" style="color:var(--neon-cyan)"></span>
       </p>
       <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:0.5rem">
-        <a href="demos.html" class="btn-ghost">Ver más demos</a>
-        <a href="index.html" class="btn-primary">Ir al inicio</a>
+        <a href="index.html" class="btn-ghost" style="font-size:0.65rem">← Inicio</a>
       </div>
     </div>
 
