@@ -246,6 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       selectedPlan = card.dataset.plan;
+      // Actualizar precio en tiempo real
+      const extra = selectedAddons.reduce((s, a) => s + (ADDON_PRICES[a] || 0), 0);
+      const priceEl = document.getElementById('livePrecio');
+      if (priceEl) priceEl.textContent = formatMXN(PLAN_PRICES[selectedPlan] + extra);
     });
   });
 
@@ -261,7 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Add-on checkboxes */
   document.querySelectorAll('.addon-check').forEach(label => {
-    label.addEventListener('click', () => {
+    label.addEventListener('click', (e) => {
+      e.preventDefault(); // evita doble disparo label→input
       label.classList.toggle('selected');
       const val = label.dataset.addon;
       if (label.classList.contains('selected')) {
@@ -269,6 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         selectedAddons = selectedAddons.filter(a => a !== val);
       }
+      // Actualizar precio visible en tiempo real
+      const base  = PLAN_PRICES[selectedPlan];
+      const extra = selectedAddons.reduce((s, a) => s + (ADDON_PRICES[a] || 0), 0);
+      const total = base + extra;
+      const priceEl = document.getElementById('livePrecio');
+      if (priceEl) priceEl.textContent = formatMXN(total);
     });
   });
 
