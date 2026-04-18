@@ -92,17 +92,20 @@ async function loadPedidos() {
 }
 
 function updateStats() {
-  const pend     = allPedidos.filter(p => p.estado === 'pendiente').length;
-  const comp     = allPedidos.filter(p => p.estado === 'completado').length;
-  const pag      = allPedidos.filter(p => p.estado === 'pagado').length;
-  const ingresos = allPedidos
+  const pend       = allPedidos.filter(p => p.estado === 'pendiente').length;
+  const comp       = allPedidos.filter(p => p.estado === 'completado').length;
+  const ingresosComp = allPedidos
+    .filter(p => p.estado === 'completado' && p.precio)
+    .reduce((sum, p) => sum + parseFloat(p.precio), 0);
+  const ingresos   = allPedidos
     .filter(p => (p.estado === 'pagado' || p.estado === 'completado') && p.precio)
     .reduce((sum, p) => sum + parseFloat(p.precio), 0);
 
   document.getElementById('statTotal').textContent = allPedidos.length;
   document.getElementById('statPend').textContent  = pend;
   document.getElementById('statComp').textContent  = comp;
-  document.getElementById('statPag').textContent   = pag;
+  const compIngEl = document.getElementById('statCompIngresos');
+  if (compIngEl) compIngEl.textContent = '$' + ingresosComp.toLocaleString('es-MX');
   const ingEl = document.getElementById('statIngresos');
   if (ingEl) ingEl.textContent = '$' + ingresos.toLocaleString('es-MX');
 
