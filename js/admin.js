@@ -96,7 +96,7 @@ function updateStats() {
   const comp     = allPedidos.filter(p => p.estado === 'completado').length;
   const pag      = allPedidos.filter(p => p.estado === 'pagado').length;
   const ingresos = allPedidos
-    .filter(p => p.estado === 'pagado' && p.precio)
+    .filter(p => (p.estado === 'pagado' || p.estado === 'completado') && p.precio)
     .reduce((sum, p) => sum + parseFloat(p.precio), 0);
 
   document.getElementById('statTotal').textContent = allPedidos.length;
@@ -305,7 +305,7 @@ async function doUpload() {
 
     if (isReplaceMode) {
       // Solo reemplazar archivos en BD, sin notificar al cliente
-      const updateFields = { audio_path: path1 };
+      const updateFields = { audio_path: path1, estado: 'completado' };
       if (path2) updateFields.audio_path_2 = path2;
       if (nombre) updateFields.nombre_cancion = nombre;
       const { error: replErr } = await sb.from('pedidos').update(updateFields).eq('id', uploadPedidoId);
@@ -607,7 +607,7 @@ async function loadClientes() {
     const { data, error } = await sb
       .from('pedidos')
       .select('id, cliente_nombre, cliente_telefono, cliente_email, tipo_tema, nombre_cancion, pagado_en, precio')
-      .eq('estado', 'pagado')
+      .in('estado', ['pagado', 'completado'])
       .order('pagado_en', { ascending: false });
 
     if (error) throw error;
@@ -662,7 +662,7 @@ async function loadClientes() {
 }
 
 function exportClientesCSV() {
-  const pagados = allPedidos.filter(p => p.estado === 'pagado');
+  const pagados = allPedidos.filter(p => p.estado === 'pagado' || p.estado === 'completado');
   if (!pagados.length) { showToast('No hay clientes pagados para exportar.', 'info'); return; }
 
   const header = ['Nombre', 'WhatsApp', 'Email', 'Tipo de Canción', 'Nombre Canción', 'Precio', 'Pagado el'];
