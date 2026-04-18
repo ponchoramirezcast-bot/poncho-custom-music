@@ -78,7 +78,7 @@ async function loadPage() {
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion, completado_en, version_elegida')
       .eq('token_descarga', token)
       .single();
 
@@ -106,13 +106,33 @@ async function loadPage() {
       return;
     }
 
-    // ✅ Pagado — stream via proxy
+    // Verificar expiración de 10 días
+    const EXPIRY_DAYS = 10;
+    if (data.completado_en) {
+      const expiresAt = new Date(new Date(data.completado_en).getTime() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+      if (new Date() > expiresAt) {
+        card.classList.add('blocked-card');
+        content.innerHTML = `
+          <div class="download-icon">⏳</div>
+          <div class="download-title" style="color:var(--neon-pink)">Enlace Expirado</div>
+          <p class="download-sub">Tu link de descarga estuvo disponible por ${EXPIRY_DAYS} días y ya venció. Contacta a Poncho por WhatsApp para reactivarlo.</p>
+          <div class="download-actions">
+            <a href="https://wa.me/5214497573058" target="_blank" class="btn-primary">📲 Contactar a Poncho</a>
+            <a href="index.html" class="btn-ghost">← Volver al inicio</a>
+          </div>
+        `;
+        return;
+      }
+    }
+
+    // ✅ Completado y vigente — stream via proxy
     const streamUrl = `${STREAM_URL}?token=${token}&mode=descarga`;
     initPlayer(streamUrl);
 
+    const versionLabel = data.version_elegida === 2 ? '-version-B' : '-version-A';
     const filename = data.nombre_cancion
-      ? `${data.nombre_cancion.replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}.mp3`
-      : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}.mp3`;
+      ? `${data.nombre_cancion.replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}${versionLabel}.mp3`
+      : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}${versionLabel}.mp3`;
 
     content.innerHTML = `
       <div class="download-icon">🎵</div>
