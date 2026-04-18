@@ -129,10 +129,9 @@ async function loadPage() {
     const streamUrl = `${STREAM_URL}?token=${token}&mode=descarga`;
     initPlayer(streamUrl);
 
-    const versionLabel = data.version_elegida === 2 ? '-version-B' : '-version-A';
     const filename = data.nombre_cancion
-      ? `${data.nombre_cancion.replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}${versionLabel}.mp3`
-      : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}${versionLabel}.mp3`;
+      ? `${data.nombre_cancion.replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}.mp3`
+      : `${data.tipo_tema.replace(/\s+/g,'-')}-${data.id.slice(0,8)}.mp3`;
 
     content.innerHTML = `
       <div class="download-icon">🎵</div>
