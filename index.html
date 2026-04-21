@@ -7,7 +7,18 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-5EYJR89ETS"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5EYJR89ETS');</script>
   <title>Poncho Custom Music — Tu Canción Personalizada</title>
-  <meta name="description" content="Crea tu canción personalizada con Poncho Custom Music. Heavy Metal, Cumbia, Hip Hop, Pop y más. Entrega en 48h.">
+  <meta name="description" content="Canciones personalizadas en corrido, reggaetón, balada. Solo $200 pesos, entrega en 48h. Poncho Records - Aguascalientes, México">
+  <meta name="keywords" content="canción personalizada, corrido personalizado, reggaetón custom, regalo único, música personalizada México, canción dedicada, rola personalizada">
+  <meta property="og:title" content="Poncho Records - Tu Canción Personalizada">
+  <meta property="og:description" content="¿Quieres tu propia canción? Corrido, reggaetón, balada. Solo $200 pesos - Entrega 48h">
+  <meta property="og:image" content="https://ponchorecords.com.mx/images/og-image.jpg">
+  <meta property="og:url" content="https://ponchorecords.com.mx">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_MX">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Poncho Records - Tu Canción Personalizada">
+  <meta name="twitter:description" content="Creamos tu rola en cualquier género. $200 pesos - 48 horas">
+  <meta name="twitter:image" content="https://ponchorecords.com.mx/images/og-image.jpg">
   <meta name="facebook-domain-verification" content="2l0y1gtm0ufcvth7o7k8ynshm23i7g" />
 
   <!-- Fonts -->
@@ -392,34 +403,6 @@
       z-index: 2;
     }
 
-    /* Footer */
-    footer {
-      padding: 2.5rem 3rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      position: relative;
-      z-index: 2;
-    }
-
-    .footer-logo {
-      font-family: var(--font-title);
-      font-size: 0.85rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      color: var(--neon-cyan);
-    }
-
-    .footer-copy {
-      font-family: var(--font-label);
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      color: var(--text-dim);
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
       #como-funciona  { padding: 5rem 1.5rem; }
@@ -434,7 +417,6 @@
       .addons-list          { grid-template-columns: 1fr; }
       #testimoniosGrid      { grid-template-columns: 1fr !important; }
 
-      footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
     }
 
     @media (max-width: 480px) {
@@ -447,6 +429,11 @@
   </style>
 </head>
 <body>
+
+<!-- Banner sticky precio -->
+<div style="background:linear-gradient(90deg,#ff006e,#ff8c00);padding:0.75rem;text-align:center;font-family:var(--font-title);position:sticky;top:0;z-index:1001;box-shadow:0 2px 8px rgba(255,0,110,0.3);">
+  <span style="color:#fff;font-size:clamp(0.9rem,2.5vw,1.1rem);font-weight:900;letter-spacing:0.02em;">🔥 Solo $200 pesos — Entrega en 48 horas garantizada</span>
+</div>
 
 <!-- Custom Cursor -->
 <div id="cursor-dot"></div>
@@ -473,23 +460,92 @@
   <div class="orb orb-3"></div>
 
   <div class="hero-content">
-    <p class="hero-eyebrow">// Música 100% Personalizada</p>
+    <p class="hero-eyebrow">// Poncho Records — Música Personalizada</p>
 
     <h1 class="hero-title">
-      <span class="line1">TU CANCIÓN</span>
-      <span class="line2" data-text="A LA MEDIDA">A LA MEDIDA</span>
+      <span class="line1">¿QUIERES TU</span>
+      <span class="line2" data-text="PROPIA CANCIÓN?">PROPIA CANCIÓN?</span>
     </h1>
 
     <p class="hero-sub">
-      Heavy Metal, Cumbia, Hip Hop, Pop y más — producida especialmente para ti.
-      Describe tu idea y la hacemos realidad en 48 horas.
+      ¿Para dedicar? ¿Para tirar indirectas? ¿Para contar tu historia como un corrido, una balada o un reggaetón?
+      Creamos tu rola personalizada en el género que tú quieras.
+      Solo $200 pesos — Entrega garantizada en 48 horas.
     </p>
 
     <div class="hero-ctas">
-      <a href="demos.html" class="btn-primary">▶ Escuchar Demos</a>
-      <a href="solicitar.html" class="btn-secondary">✦ Solicitar Mi Tema</a>
+      <a href="solicitar.html" class="btn-primary" style="font-size:1.1rem;padding:1rem 2.5rem;">
+        🎵 Solicitar Mi Canción Ahora
+      </a>
+      <a href="demos.html" class="btn-secondary">
+        ▶ Escuchar Ejemplos
+      </a>
     </div>
   </div>
+</section>
+
+<!-- ===================== DEMOS PREVIEW ===================== -->
+<section id="demos-preview">
+  <p class="section-label">Escucha Antes</p>
+  <h2 class="section-title">Demos <span class="accent">Gratuitas</span></h2>
+  <p style="color:var(--text-dim);margin-top:0.5rem;font-size:0.95rem">Escucha ejemplos de lo que podemos crear para ti.</p>
+
+  <div class="demos-preview-grid" id="demosPreviewGrid">
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div class="demos-preview-cta">
+    <a href="demos.html" class="btn-ghost">Ver todas las demos →</a>
+  </div>
+</section>
+
+<!-- ===================== PARA QUIÉN ES ===================== -->
+<section id="para-quien" style="padding:8rem 3rem;max-width:1100px;margin:0 auto;">
+  <p class="section-label">Casos de Uso</p>
+  <h2 class="section-title">¿Para <span class="accent">quién es?</span></h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem;">
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">💍</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">PROPUESTAS ÉPICAS</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Declárarte con una canción que escribiste solo para ella/él. Inolvidable.</p>
+    </div>
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="80" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">🎁</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">REGALOS ÚNICOS</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Cumpleaños, aniversarios, Día de las Madres. El regalo que nadie más puede dar.</p>
+    </div>
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="160" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">🏆</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">CELEBRA LOGROS</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Graduaciones, retiros, campeonatos. Inmortaliza ese momento con música.</p>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:1.5rem;">
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="240" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">💔</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">SANA EMOCIONES</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Procesa duelos, rupturas, cambios. La música cura lo que las palabras no alcanzan.</p>
+    </div>
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="320" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">🎤</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">TU BANDA SONORA</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Tu historia, tus batallas, tus victorias. Mereces tu propio himno personal.</p>
+    </div>
+    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="400" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
+      <div style="font-size:3rem;margin-bottom:1rem;">🎉</div>
+      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">EVENTOS ESPECIALES</h3>
+      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Bodas, XV años, despedidas de soltera. Dale a tu evento su canción oficial.</p>
+    </div>
+  </div>
+  <style>@media(max-width:768px){#para-quien>div{grid-template-columns:1fr!important;}}</style>
 </section>
 
 <!-- ===================== CÓMO FUNCIONA ===================== -->
@@ -589,29 +645,6 @@
   </div>
 </section>
 
-<!-- ===================== DEMOS PREVIEW ===================== -->
-<section id="demos-preview">
-  <p class="section-label">Escucha Antes</p>
-  <h2 class="section-title">Demos <span class="accent">Gratuitas</span></h2>
-  <p style="color:var(--text-dim);margin-top:0.5rem;font-size:0.95rem">Escucha ejemplos de lo que podemos crear para ti.</p>
-
-  <div class="demos-preview-grid" id="demosPreviewGrid">
-    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
-      <div class="spinner"></div>
-    </div>
-    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
-      <div class="spinner"></div>
-    </div>
-    <div class="audio-card" style="display:flex;align-items:center;justify-content:center;min-height:120px">
-      <div class="spinner"></div>
-    </div>
-  </div>
-
-  <div class="demos-preview-cta">
-    <a href="demos.html" class="btn-ghost">Ver todas las demos →</a>
-  </div>
-</section>
-
 <!-- ===================== TESTIMONIOS ===================== -->
 <section id="testimonios" style="display:none;padding:8rem 3rem;max-width:1100px;margin:0 auto">
   <p class="section-label">Lo Que Dicen</p>
@@ -630,7 +663,13 @@
 <!-- ===================== FOOTER ===================== -->
 <footer>
   <span class="footer-logo">PONCHO CUSTOM MUSIC</span>
-  <span class="footer-copy">© 2025 — Audios personalizados bajo demanda</span>
+  <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;font-size:0.75rem;">
+    <a href="privacidad.html" style="color:var(--text-dim);transition:color var(--transition);">Privacidad</a>
+    <a href="terminos.html" style="color:var(--text-dim);transition:color var(--transition);">Términos</a>
+    <a href="reembolsos.html" style="color:var(--text-dim);transition:color var(--transition);">Reembolsos</a>
+    <a href="mailto:ponchoramirezcast@gmail.com" style="color:var(--text-dim);transition:color var(--transition);">Contacto</a>
+  </div>
+  <span class="footer-copy">© 2026 — Audios personalizados bajo demanda</span>
 </footer>
 
 <!-- Scripts -->

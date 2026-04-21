@@ -1154,3 +1154,35 @@ body::after {
   .toast-container { bottom: 1rem; right: 0.75rem; left: 0.75rem; }
   .toast { max-width: 100%; }
 }
+
+/* ---- Shared footer ---- */
+footer {
+  padding: 2.5rem 3rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.footer-logo {
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--neon-cyan);
+}
+
+.footer-copy {
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+@media (max-width: 768px) {
+  footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+}
