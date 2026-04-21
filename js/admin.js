@@ -624,7 +624,7 @@ async function loadClientes() {
       const digits  = (p.cliente_telefono || '').replace(/\D/g, '');
       const waPhone = digits.length === 10 ? `52${digits}` : digits;
       const promoMsg = encodeURIComponent(
-        `¡Hola ${p.cliente_nombre}! 🎵 Tenemos nuevas canciones personalizadas disponibles en Poncho Custom Music. ¿Te interesa otra? Aquí puedes ver los demos: https://ponchoramirezcast-bot.github.io/poncho-custom-music/demos.html`
+        `¡Hola ${p.cliente_nombre}! 🎵 Tenemos nuevas canciones personalizadas disponibles en Poncho Custom Music. ¿Te interesa otra? Aquí puedes ver los demos: https://ponchorecords.com.mx/demos.html`
       );
       const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${promoMsg}` : '';
 

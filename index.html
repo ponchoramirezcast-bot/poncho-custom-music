@@ -715,7 +715,7 @@
     const grid = document.getElementById('demosPreviewGrid');
     try {
       const { data, error } = await sb.from('demos')
-        .select('id, nombre, tipo_tema, audio_url')
+        .select('id, nombre, tipo_tema')
         .order('orden', { ascending: true })
         .limit(3);
 
@@ -731,8 +731,9 @@
         const card = document.createElement('div');
         card.className = 'audio-card z2';
         card.innerHTML = `
-          <audio id="aud-${demo.id}" src="${demo.audio_url}" preload="none"
-            controlsList="nodownload" oncontextmenu="return false"></audio>
+          <audio id="aud-${demo.id}"
+            src="https://vtbifrcnjrvqgwtjdood.supabase.co/functions/v1/stream_audio?mode=demo&demo_id=${demo.id}"
+            preload="none" controlsList="nodownload" oncontextmenu="return false"></audio>
           <div class="player-header">
             <div>
               <div class="player-title">${demo.nombre}</div>

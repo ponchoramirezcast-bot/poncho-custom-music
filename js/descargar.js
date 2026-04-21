@@ -78,7 +78,7 @@ async function loadPage() {
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion, completado_en, version_elegida')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion, pagado_en, version_elegida')
       .eq('token_descarga', token)
       .single();
 
@@ -93,7 +93,8 @@ async function loadPage() {
       return;
     }
 
-    if (data.estado !== 'completado') {
+    // FIX: descarga disponible cuando estado='pagado'
+    if (data.estado !== 'pagado') {
       card.classList.add('blocked-card');
       content.innerHTML = `
         <div class="download-icon">🎛️</div>
@@ -106,10 +107,10 @@ async function loadPage() {
       return;
     }
 
-    // Verificar expiración de 10 días
+    // Verificar expiración de 10 días desde que se confirmó el pago
     const EXPIRY_DAYS = 10;
-    if (data.completado_en) {
-      const expiresAt = new Date(new Date(data.completado_en).getTime() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    if (data.pagado_en) {
+      const expiresAt = new Date(new Date(data.pagado_en).getTime() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
       if (new Date() > expiresAt) {
         card.classList.add('blocked-card');
         content.innerHTML = `

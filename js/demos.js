@@ -1,7 +1,10 @@
 /* ============================================================
    PONCHO CUSTOM MUSIC — Demos Gallery
    Custom audio player, filter by tipo_tema, no-download policy
+   FIX: audio ruteado por stream_audio proxy (modo demo)
    ============================================================ */
+
+const STREAM_URL = 'https://vtbifrcnjrvqgwtjdood.supabase.co/functions/v1/stream_audio';
 
 let currentAudioId = null;
 let allDemos = [];
@@ -22,10 +25,13 @@ function renderDemoCard(demo) {
   card.className = 'demo-card audio-card';
   card.dataset.tipo = demo.tipo_tema;
 
+  // FIX: usar proxy stream_audio en modo demo (nunca exponer URL real)
+  const demoStreamUrl = `${STREAM_URL}?mode=demo&demo_id=${demo.id}`;
+
   card.innerHTML = `
     <audio
       id="aud-${demo.id}"
-      src="${demo.audio_url}"
+      src="${demoStreamUrl}"
       preload="none"
       controlsList="nodownload"
       oncontextmenu="return false">

@@ -1,7 +1,9 @@
 // ============================================================
-// PONCHO CUSTOM MUSIC — Edge Function: notificar_audio_listo
+// PONCHO CUSTOM MUSIC — Edge Function: notificar_audio_listo v21
 // Called by admin after uploading audio.
-// Updates estado to "completado", generates signed URL, emails client.
+// FIX: usa token_escucha (no token_descarga) en el link de escucha
+// FIX: guarda audio_path_2 y nombre_cancion
+// FIX: SITE_URL hardcodeado como ponchorecords.com.mx
 // ============================================================
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -29,7 +31,6 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // Verify the JWT belongs to a valid user
   const jwt = authHeader.replace("Bearer ", "");
   const { data: { user }, error: authErr } = await supabase.auth.getUser(jwt);
   if (authErr || !user) {
@@ -39,43 +40,67 @@ serve(async (req) => {
   }
 
   try {
-    const { pedido_id, audio_path, precio } = await req.json();
+    const { pedido_id, audio_path, audio_path_2, nombre_cancion, precio } = await req.json();
     if (!pedido_id || !audio_path) {
       return new Response(JSON.stringify({ error: "pedido_id y audio_path requeridos." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // --- Generate signed URL (72 hours = 259200 seconds) ---
+    // --- Generate signed URL for listen page (72 hours) ---
     const { data: signedData, error: signErr } = await supabase.storage
       .from("audios")
       .createSignedUrl(audio_path, 259200);
 
     if (signErr) throw signErr;
 
-    const signedUrl = signedData.signedUrl;
+    // --- Build update fields ---
+    const updateFields: Record<string, unknown> = {
+      estado:    "completado",
+      audio_url: signedData.signedUrl,
+      audio_path,
+      completado_en: new Date().toISOString(),
+    };
+    if (precio)          updateFields.precio         = precio;
+    if (audio_path_2)    updateFields.audio_path_2   = audio_path_2;
+    if (nombre_cancion)  updateFields.nombre_cancion = nombre_cancion;
 
     // --- Update pedido ---
     const { data: pedido, error: updateErr } = await supabase
       .from("pedidos")
-      .update({
-        estado:    "completado",
-        audio_url: signedUrl,
-        audio_path,
-        precio:    precio || null,
-      })
+      .update(updateFields)
       .eq("id", pedido_id)
-      .select("id, cliente_nombre, cliente_email, tipo_tema, mood, token_descarga, precio")
+      .select("id, cliente_nombre, cliente_email, cliente_telefono, tipo_tema, mood, token_escucha, precio")
       .single();
 
     if (updateErr) throw updateErr;
 
-    // --- Email client ---
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Poncho Custom Music <noreply@ponchorecords.com>";
-    const siteUrl   = Deno.env.get("SITE_URL") || "https://ponchoramirezcast-bot.github.io/poncho-records";
-    const listenUrl = `${siteUrl}/escuchar.html?token=${pedido.token_descarga}`;
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Poncho Custom Music <noreply@ponchorecords.com.mx>";
+    // FIX: usa ponchorecords.com.mx como default
+    const siteUrl   = Deno.env.get("SITE_URL") || "https://ponchorecords.com.mx";
+    // FIX: usa token_escucha (no token_descarga)
+    const listenUrl = `${siteUrl}/escuchar.html?token=${pedido.token_escucha}`;
 
+    // --- WhatsApp al dueño con datos del cliente para reenviar ---
+    const ownerPhone   = Deno.env.get("OWNER_WHATSAPP");
+    const callMeBotKey = Deno.env.get("CALLMEBOT_KEY");
+    if (ownerPhone && callMeBotKey) {
+      const waMsg = encodeURIComponent(
+        `🎵 Audio listo — Poncho Custom Music\n` +
+        `Cliente: ${pedido.cliente_nombre}\n` +
+        `Email: ${pedido.cliente_email}\n` +
+        `Cel: ${pedido.cliente_telefono || "—"}\n` +
+        `Tipo: ${pedido.tipo_tema}\n` +
+        `Precio: $${pedido.precio || "—"} MXN\n` +
+        `Link escucha: ${listenUrl}`
+      );
+      fetch(
+        `https://api.callmebot.com/whatsapp.php?phone=${ownerPhone}&text=${waMsg}&apikey=${callMeBotKey}`
+      ).catch(console.error);
+    }
+
+    // --- Email al cliente ---
     if (resendKey) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -91,8 +116,8 @@ serve(async (req) => {
             <div style="background:#020408;color:#e0e0e0;font-family:sans-serif;max-width:560px;margin:0 auto;padding:2rem">
               <h1 style="color:#00f5ff;font-size:1.2rem;letter-spacing:0.1em">PONCHO CUSTOM MUSIC</h1>
               <h2 style="color:#fff">¡Tu canción está lista, ${pedido.cliente_nombre}!</h2>
-              <p>Tu tema de <strong>${pedido.tipo_tema}</strong> con mood <strong>${pedido.mood || ""}</strong> ya está listo para escuchar.</p>
-              <p style="color:#aaa">Haz clic abajo para escucharla. Cuando estés listo para pagar, contáctanos por WhatsApp y activamos tu descarga.</p>
+              <p>Tu tema de <strong>${pedido.tipo_tema}</strong>${pedido.mood ? ` con mood <strong>${pedido.mood}</strong>` : ''} ya está listo para escuchar.</p>
+              <p style="color:#aaa">Haz clic abajo para escucharla. Cuando confirmes el pago por WhatsApp, activamos tu descarga.</p>
               <a href="${listenUrl}" style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;background:transparent;border:1.5px solid #00f5ff;color:#00f5ff;text-decoration:none;font-family:monospace;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase">
                 ▶ ESCUCHAR MI CANCIÓN
               </a>
@@ -113,7 +138,7 @@ serve(async (req) => {
   } catch (err) {
     console.error(err);
     return new Response(
-      JSON.stringify({ error: "Error interno." }),
+      JSON.stringify({ error: String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
