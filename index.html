@@ -31,6 +31,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/styles-v2.css">
 
   <style>
     /* ---- Landing-specific styles ---- */
@@ -431,9 +432,7 @@
 <body>
 
 <!-- Banner sticky precio -->
-<div style="background:linear-gradient(90deg,#ff006e,#ff8c00);padding:0.75rem;text-align:center;font-family:var(--font-title);position:sticky;top:0;z-index:1001;box-shadow:0 2px 8px rgba(255,0,110,0.3);">
-  <span style="color:#fff;font-size:clamp(0.9rem,2.5vw,1.1rem);font-weight:900;letter-spacing:0.02em;">🔥 Solo $200 pesos — Entrega en 48 horas garantizada</span>
-</div>
+<div class="promo-banner">🔥 Solo $200 pesos — Entrega en 48 horas garantizada</div>
 
 <!-- Custom Cursor -->
 <div id="cursor-dot"></div>
@@ -454,13 +453,13 @@
 
 <!-- ===================== HERO ===================== -->
 <section id="hero">
-  <!-- Orbs -->
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 
-  <div class="hero-content">
-    <p class="hero-eyebrow">// Poncho Records — Música Personalizada</p>
+  <!-- Texto izquierdo -->
+  <div class="hero-text">
+    <p class="hero-eyebrow">// Poncho Records · Canciones Personalizadas · MX</p>
 
     <h1 class="hero-title">
       <span class="line1">¿QUIERES TU</span>
@@ -468,10 +467,25 @@
     </h1>
 
     <p class="hero-sub">
-      ¿Para dedicar? ¿Para tirar indirectas? ¿Para contar tu historia como un corrido, una balada o un reggaetón?
-      Creamos tu rola personalizada en el género que tú quieras.
-      Solo $200 pesos — Entrega garantizada en 48 horas.
+      Para dedicar, tirar indirectas o contar tu historia como un corrido, balada, reggaetón o cumbia.
+      Nos cuentas tu idea y la volvemos una rola producida profesionalmente.
+      <strong style="color:#e0e0e0"> Solo $200 pesos — Entrega en 48 horas.</strong>
     </p>
+
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">48h</span>
+        <span class="hero-meta-lbl">Entrega</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">$200</span>
+        <span class="hero-meta-lbl">Desde MXN</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">+40</span>
+        <span class="hero-meta-lbl">Canciones hechas</span>
+      </div>
+    </div>
 
     <div class="hero-ctas">
       <a href="solicitar.html" class="btn-primary" style="font-size:1.1rem;padding:1rem 2.5rem;">
@@ -480,6 +494,27 @@
       <a href="demos.html" class="btn-secondary">
         ▶ Escuchar Ejemplos
       </a>
+    </div>
+
+    <div class="hero-genres">
+      <button class="genre-pill active" onclick="filterGenre(this,'Corrido')">Corrido</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Reggaetón')">Reggaetón</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Balada')">Balada</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Cumbia')">Cumbia</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Hip Hop')">Hip Hop</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Pop')">Pop</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Metal')">Metal</button>
+      <button class="genre-pill" onclick="filterGenre(this,'Rock')">Rock</button>
+    </div>
+  </div>
+
+  <!-- Escena animada derecha -->
+  <div class="hero-scene">
+    <div id="heroSceneContainer"></div>
+    <div class="scene-switcher">
+      <button class="scene-btn active" onclick="switchScene('vinyl',this)">▶ Vinilo</button>
+      <button class="scene-btn" onclick="switchScene('dj',this)">🎧 DJ</button>
+      <button class="scene-btn" onclick="switchScene('wave',this)">〰 Waveform</button>
     </div>
   </div>
 </section>
@@ -511,41 +546,40 @@
 <section id="para-quien" style="padding:8rem 3rem;max-width:1100px;margin:0 auto;">
   <p class="section-label">Casos de Uso</p>
   <h2 class="section-title">¿Para <span class="accent">quién es?</span></h2>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem;">
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">💍</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">PROPUESTAS ÉPICAS</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Declárarte con una canción que escribiste solo para ella/él. Inolvidable.</p>
+  <p style="color:var(--text-dim);font-size:0.95rem;max-width:580px;margin-top:0.5rem">Cualquier persona con una historia que quiera contar. Estos son los casos más comunes.</p>
+
+  <div class="use-cases-grid">
+    <div class="use-case-card" data-animate>
+      <div class="use-case-emoji">💍</div>
+      <div class="use-case-title">Propuestas Épicas</div>
+      <div class="use-case-desc">Declárarte con una canción escrita solo para ella o él. Inolvidable.</div>
     </div>
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="80" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">🎁</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">REGALOS ÚNICOS</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Cumpleaños, aniversarios, Día de las Madres. El regalo que nadie más puede dar.</p>
+    <div class="use-case-card" data-animate data-delay="80">
+      <div class="use-case-emoji">🎁</div>
+      <div class="use-case-title">Regalos Únicos</div>
+      <div class="use-case-desc">Cumpleaños, aniversarios, Día de las Madres. El regalo que nadie más puede dar.</div>
     </div>
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="160" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">🏆</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">CELEBRA LOGROS</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Graduaciones, retiros, campeonatos. Inmortaliza ese momento con música.</p>
+    <div class="use-case-card" data-animate data-delay="160">
+      <div class="use-case-emoji">🏆</div>
+      <div class="use-case-title">Celebra Logros</div>
+      <div class="use-case-desc">Graduaciones, retiros, campeonatos. Inmortaliza ese momento con música.</div>
+    </div>
+    <div class="use-case-card" data-animate data-delay="240">
+      <div class="use-case-emoji">💔</div>
+      <div class="use-case-title">Sana Emociones</div>
+      <div class="use-case-desc">Procesa duelos, rupturas, cambios. La música cura lo que las palabras no alcanzan.</div>
+    </div>
+    <div class="use-case-card" data-animate data-delay="320">
+      <div class="use-case-emoji">🎤</div>
+      <div class="use-case-title">Tu Banda Sonora</div>
+      <div class="use-case-desc">Tu historia, tus batallas, tus victorias. Mereces tu propio himno personal.</div>
+    </div>
+    <div class="use-case-card" data-animate data-delay="400">
+      <div class="use-case-emoji">🎉</div>
+      <div class="use-case-title">Eventos Especiales</div>
+      <div class="use-case-desc">Bodas, XV años, despedidas de soltera. Dale a tu evento su canción oficial.</div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:1.5rem;">
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="240" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">💔</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">SANA EMOCIONES</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Procesa duelos, rupturas, cambios. La música cura lo que las palabras no alcanzan.</p>
-    </div>
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="320" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">🎤</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">TU BANDA SONORA</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Tu historia, tus batallas, tus victorias. Mereces tu propio himno personal.</p>
-    </div>
-    <div style="padding:2rem 1.5rem;border:1px solid var(--border);background:var(--dark-card);text-align:center;transition:border-color var(--transition),transform var(--transition);" data-animate data-delay="400" onmouseover="this.style.borderColor='var(--neon-cyan)';this.style.transform='translateY(-6px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';">
-      <div style="font-size:3rem;margin-bottom:1rem;">🎉</div>
-      <h3 style="font-family:var(--font-title);font-size:0.85rem;color:var(--neon-cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;">EVENTOS ESPECIALES</h3>
-      <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.6;">Bodas, XV años, despedidas de soltera. Dale a tu evento su canción oficial.</p>
-    </div>
-  </div>
-  <style>@media(max-width:768px){#para-quien>div{grid-template-columns:1fr!important;}}</style>
 </section>
 
 <!-- ===================== CÓMO FUNCIONA ===================== -->
@@ -661,15 +695,15 @@
 </section>
 
 <!-- ===================== FOOTER ===================== -->
-<footer>
+<footer style="flex-direction:column;align-items:center;gap:0.75rem;">
   <span class="footer-logo">PONCHO CUSTOM MUSIC</span>
-  <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;font-size:0.75rem;">
-    <a href="privacidad.html" style="color:var(--text-dim);transition:color var(--transition);">Privacidad</a>
-    <a href="terminos.html" style="color:var(--text-dim);transition:color var(--transition);">Términos</a>
-    <a href="reembolsos.html" style="color:var(--text-dim);transition:color var(--transition);">Reembolsos</a>
-    <a href="mailto:ponchoramirezcast@gmail.com" style="color:var(--text-dim);transition:color var(--transition);">Contacto</a>
+  <div class="footer-legal">
+    <a href="privacidad.html">Privacidad</a>
+    <a href="terminos.html">Términos</a>
+    <a href="reembolsos.html">Reembolsos</a>
+    <a href="mailto:ponchoramirezcast@gmail.com">Contacto</a>
   </div>
-  <span class="footer-copy">© 2026 — Audios personalizados bajo demanda</span>
+  <span class="footer-copy">© 2026 — Audios personalizados bajo demanda · Aguascalientes, México</span>
 </footer>
 
 <!-- Scripts -->
@@ -831,6 +865,295 @@
       aud.currentTime = ((e.clientX - rect.left) / rect.width) * aud.duration;
     });
   }
+</script>
+
+<script>
+/* ============================================================
+   HERO SCENES — Vanilla JS (sin React)
+   ============================================================ */
+
+// --- Genre pills ---
+function filterGenre(el, genre) {
+  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// --- Scene switcher ---
+let currentScene = 'vinyl';
+let waveRAF = null;
+let djBeatInterval = null;
+let vinylSpinning = true;
+let waveMode = 'wave';
+let waveT = 0;
+const barSeeds = Array.from({length:56}).map(() => Math.random());
+
+function switchScene(scene, btn) {
+  if (btn) {
+    document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  // Stop current scene
+  if (waveRAF) { cancelAnimationFrame(waveRAF); waveRAF = null; }
+  if (djBeatInterval) { clearInterval(djBeatInterval); djBeatInterval = null; }
+  currentScene = scene;
+  const container = document.getElementById('heroSceneContainer');
+  if (!container) return;
+  if (scene === 'vinyl') renderVinyl(container);
+  else if (scene === 'dj') renderDJ(container);
+  else if (scene === 'wave') renderWaveform(container);
+}
+
+/* ---- VINYL SCENE ---- */
+function renderVinyl(container) {
+  vinylSpinning = true;
+  const bars = Array.from({length:18}).map((_,i) => {
+    const h = 20 + Math.floor(Math.random() * 60);
+    const delay = ((i * 0.07) % 0.9).toFixed(2);
+    return `<div class="vinyl-bar" style="animation-delay:${delay}s;height:${h}%"></div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="vinyl-scene" id="vinylScene">
+      <div class="vinyl-hint">
+        <div id="vinylStatus">[ NOW PLAYING ]</div>
+        <div class="tag" id="vinylHint">CLICK TO PAUSE</div>
+      </div>
+      <div class="vinyl-frame">
+        <div class="vinyl-glow"></div>
+        <div class="vinyl-disc" id="vinylDisc">
+          <div class="vinyl-label" id="vinylLabel">
+            <span class="vinyl-label-text">PONCHO<br>CUSTOM<br>MUSIC</span>
+          </div>
+        </div>
+        <div class="vinyl-arm" id="vinylArm">
+          <div class="vinyl-arm-base"></div>
+          <div class="vinyl-arm-rod"></div>
+          <div class="vinyl-arm-head"></div>
+        </div>
+        <div class="vinyl-bars" id="vinylBars">${bars}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('vinylScene').addEventListener('click', () => {
+    vinylSpinning = !vinylSpinning;
+    const disc = document.getElementById('vinylDisc');
+    const label = document.getElementById('vinylLabel');
+    const arm = document.getElementById('vinylArm');
+    const allBars = document.querySelectorAll('.vinyl-bar');
+    const status = document.getElementById('vinylStatus');
+    const hint = document.getElementById('vinylHint');
+
+    if (vinylSpinning) {
+      disc.classList.remove('paused');
+      label.classList.remove('paused');
+      arm.classList.remove('paused');
+      allBars.forEach(b => b.classList.remove('paused'));
+      status.textContent = '[ NOW PLAYING ]';
+      hint.textContent = 'CLICK TO PAUSE';
+    } else {
+      disc.classList.add('paused');
+      label.classList.add('paused');
+      arm.classList.add('paused');
+      allBars.forEach(b => b.classList.add('paused'));
+      status.textContent = '[ PAUSED ]';
+      hint.textContent = 'CLICK TO PLAY';
+    }
+  });
+}
+
+/* ---- DJ SCENE ---- */
+function renderDJ(container) {
+  const eqBars = Array.from({length:32}).map((_,i) => {
+    const delay = ((i * 0.037) % 0.9).toFixed(3);
+    const dur = (0.7 + (i % 5) * 0.12).toFixed(2);
+    const min = 8 + (i % 3) * 6;
+    return `<div class="dj-eq-bar" style="animation:eqBounce ${dur}s ease-in-out infinite ${delay}s;--min:${min}%"></div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="dj-scene">
+      <div class="dj-frame">
+        <div class="dj-glow"></div>
+        <div class="dj-scan"></div>
+        <div class="dj-label">
+          <span class="t">[ LIVE MIX ]</span>
+          BPM · 128
+        </div>
+        <div class="dj-silhouette">
+          <div class="dj-head"></div>
+          <div class="dj-phones">
+            <div class="dj-phone-cup left"></div>
+            <div class="dj-phone-cup right"></div>
+          </div>
+          <div class="dj-body">
+            <div class="dj-arm left"></div>
+            <div class="dj-arm right"></div>
+            <div class="dj-torso"></div>
+          </div>
+        </div>
+        <div class="dj-table">
+          <div class="dj-deck"></div>
+          <div class="dj-mixer" id="djMixer">
+            <div class="mixer-row" id="djRow1"></div>
+            <div class="mixer-row" id="djRow2"></div>
+            <div class="mixer-knobs">
+              <div class="mixer-knob" id="djKnob1"></div>
+              <div class="mixer-knob" id="djKnob2"></div>
+            </div>
+          </div>
+          <div class="dj-deck right"></div>
+        </div>
+        <div class="dj-eq-bg">${eqBars}</div>
+      </div>
+    </div>
+  `;
+
+  // Animate LEDs
+  let beat = 0;
+  djBeatInterval = setInterval(() => {
+    beat = (beat + 1) % 4;
+    const row1 = document.getElementById('djRow1');
+    const row2 = document.getElementById('djRow2');
+    const knob1 = document.getElementById('djKnob1');
+    const knob2 = document.getElementById('djKnob2');
+    if (!row1) { clearInterval(djBeatInterval); return; }
+    row1.innerHTML = [0,1,2,3,4,5].map(i => `<div class="mixer-led ${i <= beat+1 ? 'on' : ''}"></div>`).join('');
+    row2.innerHTML = [0,1,2,3,4,5].map(i => `<div class="mixer-led ${i <= (3-beat)+1 ? 'on pink' : ''}"></div>`).join('');
+    if (knob1) knob1.style.transform = `rotate(${beat*30}deg)`;
+    if (knob2) knob2.style.transform = `rotate(${-beat*30}deg)`;
+  }, 500);
+}
+
+/* ---- WAVEFORM SCENE ---- */
+function renderWaveform(container) {
+  waveMode = 'wave';
+  container.innerHTML = `
+    <div class="wave-scene">
+      <div class="wave-frame">
+        <div class="wave-corner tl"></div>
+        <div class="wave-corner tr"></div>
+        <div class="wave-corner bl"></div>
+        <div class="wave-corner br"></div>
+        <canvas id="waveCanvas" class="wave-canvas"></canvas>
+        <div class="wave-chrome">
+          <span>PCM · OSC</span>
+          <span class="rec">REC 48kHz</span>
+        </div>
+        <div class="wave-footer">
+          <button class="wave-mode active" onclick="setWaveMode('wave',this)">~ Señal</button>
+          <button class="wave-mode" onclick="setWaveMode('bars',this)">▮ Spectro</button>
+          <button class="wave-mode" onclick="setWaveMode('circle',this)">◎ Radial</button>
+        </div>
+      </div>
+    </div>
+  `;
+  startWaveCanvas();
+}
+
+function setWaveMode(m, btn) {
+  waveMode = m;
+  document.querySelectorAll('.wave-mode').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function startWaveCanvas() {
+  const canvas = document.getElementById('waveCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const resize = () => {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const draw = () => {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    waveT += 0.02;
+    const cy = h / 2;
+
+    if (waveMode === 'wave') {
+      const cfgs = [
+        { color:'#00f5ff', amp:0.22, freq:0.018, phase:0, blur:10, width:2 },
+        { color:'#bf00ff', amp:0.16, freq:0.025, phase:1.2, blur:14, width:1.5 },
+        { color:'#ff006e', amp:0.12, freq:0.035, phase:2.4, blur:8, width:1 },
+      ];
+      cfgs.forEach(c => {
+        ctx.save();
+        ctx.shadowColor = c.color; ctx.shadowBlur = c.blur;
+        ctx.strokeStyle = c.color; ctx.lineWidth = c.width;
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 2) {
+          const y = cy + Math.sin(x*c.freq + waveT*2 + c.phase)*h*c.amp
+                      + Math.sin(x*c.freq*2.3 + waveT*1.4 + c.phase)*h*c.amp*0.3;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke(); ctx.restore();
+      });
+      ctx.strokeStyle='rgba(0,245,255,0.15)'; ctx.setLineDash([4,6]);
+      ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(w,cy); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    else if (waveMode === 'bars') {
+      const N = 56, bw = w/N;
+      for (let i=0; i<N; i++) {
+        const seed = barSeeds[i];
+        const raw = Math.abs(Math.sin(waveT*1.4 + i*0.3 + seed*5));
+        const h2 = raw*(0.2+seed*0.6)*h*0.45 + h*0.05;
+        const grad = ctx.createLinearGradient(0,cy-h2,0,cy+h2);
+        grad.addColorStop(0,'rgba(0,245,255,0.95)');
+        grad.addColorStop(0.5,'rgba(191,0,255,0.9)');
+        grad.addColorStop(1,'rgba(255,0,110,0.95)');
+        ctx.fillStyle=grad; ctx.shadowColor='#00f5ff'; ctx.shadowBlur=8;
+        ctx.fillRect(i*bw+bw*0.15, cy-h2, bw*0.7, h2*2);
+      }
+      ctx.shadowBlur=0;
+    }
+    else if (waveMode === 'circle') {
+      const cx2=w/2, r0=Math.min(w,h)*0.22, pulse=1+Math.sin(waveT*4)*0.04;
+      const innerGrad=ctx.createRadialGradient(cx2,cy,r0*0.3,cx2,cy,r0);
+      innerGrad.addColorStop(0,'rgba(255,0,110,0.6)');
+      innerGrad.addColorStop(0.6,'rgba(191,0,255,0.3)');
+      innerGrad.addColorStop(1,'rgba(0,245,255,0)');
+      ctx.fillStyle=innerGrad; ctx.beginPath();
+      ctx.arc(cx2,cy,r0*pulse,0,Math.PI*2); ctx.fill();
+      for (let i=0; i<96; i++) {
+        const angle=(i/96)*Math.PI*2;
+        const seed=barSeeds[i%56];
+        const raw=Math.abs(Math.sin(waveT*1.6+i*0.2+seed*5));
+        const len=r0*0.3+raw*r0*0.9*(0.5+seed*0.5);
+        ctx.strokeStyle=`hsl(${(i/96)*360+waveT*40},95%,60%)`;
+        ctx.shadowColor=ctx.strokeStyle; ctx.shadowBlur=6; ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(cx2+Math.cos(angle)*r0, cy+Math.sin(angle)*r0);
+        ctx.lineTo(cx2+Math.cos(angle)*(r0+len), cy+Math.sin(angle)*(r0+len));
+        ctx.stroke();
+      }
+      ctx.shadowBlur=0;
+      ctx.strokeStyle='rgba(0,245,255,0.4)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(cx2,cy,r0,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#fff';
+      ctx.font='900 '+(r0*0.18).toFixed(0)+'px Orbitron,monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='#00f5ff'; ctx.shadowBlur=14;
+      ctx.fillText('PCM',cx2,cy); ctx.shadowBlur=0;
+    }
+    waveRAF = requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+// Init vinyl scene on load
+document.addEventListener('DOMContentLoaded', () => {
+  switchScene('vinyl', null);
+});
 </script>
 
 </body>
