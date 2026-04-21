@@ -895,6 +895,9 @@ function switchScene(scene, btn) {
   // Stop current scene
   if (waveRAF) { cancelAnimationFrame(waveRAF); waveRAF = null; }
   if (djBeatInterval) { clearInterval(djBeatInterval); djBeatInterval = null; }
+  // Cleanup canvas resize listener if present
+  const oldCanvas = document.getElementById('waveCanvas');
+  if (oldCanvas && oldCanvas._cleanupResize) oldCanvas._cleanupResize();
   currentScene = scene;
   const container = document.getElementById('heroSceneContainer');
   if (!container) return;
@@ -1048,7 +1051,8 @@ function renderWaveform(container) {
       </div>
     </div>
   `;
-  startWaveCanvas();
+  // Defer canvas init so layout is fully painted
+  requestAnimationFrame(() => requestAnimationFrame(startWaveCanvas));
 }
 
 function setWaveMode(m, btn) {
@@ -1064,13 +1068,16 @@ function startWaveCanvas() {
 
   const resize = () => {
     const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return; // skip if not laid out yet
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
   resize();
-  window.addEventListener('resize', resize);
+  const resizeHandler = () => resize();
+  window.addEventListener('resize', resizeHandler);
+  canvas._cleanupResize = () => window.removeEventListener('resize', resizeHandler);
 
   const draw = () => {
     const w = canvas.clientWidth;
