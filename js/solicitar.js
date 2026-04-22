@@ -143,6 +143,15 @@ async function submitPedido() {
   try {
     const result = await callFunction('crear_pedido', payload);
 
+    // Meta Pixel: Lead — formulario enviado exitosamente
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', {
+        content_name: 'Pedido de Canción Personalizada',
+        value: payload.precio,
+        currency: 'MXN'
+      });
+    }
+
     // Mostrar pantalla de pago
     document.querySelector('.step-indicator').style.display = 'none';
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
