@@ -308,7 +308,9 @@ async function doUpload() {
 
     if (isReplaceMode) {
       // Solo reemplazar archivos en BD, sin notificar al cliente
-      const updateFields = { audio_path: path1, estado: 'completado' };
+      // No cambiar el estado — conservar el estado actual del pedido
+      const pActual = allPedidos.find(x => x.id === uploadPedidoId);
+      const updateFields = { audio_path: path1, estado: pActual?.estado || 'completado' };
       if (path2) updateFields.audio_path_2 = path2;
       if (nombre) updateFields.nombre_cancion = nombre;
       const { error: replErr } = await sb.from('pedidos').update(updateFields).eq('id', uploadPedidoId);
@@ -705,7 +707,7 @@ async function reenviarLink(pedidoId) {
       .eq('id', pedidoId);
     if (error) throw error;
 
-    const siteUrl   = 'https://ponchoramirezcast-bot.github.io/poncho-custom-music';
+    const siteUrl   = 'https://ponchorecords.com.mx';
     const listenUrl = `${siteUrl}/escuchar.html?token=${newToken}`;
 
     if (p.cliente_telefono) {

@@ -1,9 +1,9 @@
 // ============================================================
-// PONCHO CUSTOM MUSIC — Edge Function: notificar_audio_listo v21
-// Called by admin after uploading audio.
-// FIX: usa token_escucha (no token_descarga) en el link de escucha
-// FIX: guarda audio_path_2 y nombre_cancion
-// FIX: SITE_URL hardcodeado como ponchorecords.com.mx
+// PONCHO CUSTOM MUSIC — Edge Function: notificar_audio_listo v22
+// FIX: detecta si el pedido ya fue pagado antes de subir audio.
+//      Si estado previo = 'pagado'  → envía email de DESCARGA directa.
+//      Si estado previo != 'pagado' → envía email de ESCUCHA + pago.
+// FIX: usa token_escucha en escucha y token_descarga en descarga.
 // ============================================================
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -47,6 +47,16 @@ serve(async (req) => {
       });
     }
 
+    // --- Leer estado PREVIO del pedido (para saber qué email enviar) ---
+    const { data: prevPedido, error: prevErr } = await supabase
+      .from("pedidos")
+      .select("estado, pagado_en")
+      .eq("id", pedido_id)
+      .single();
+
+    if (prevErr || !prevPedido) throw prevErr || new Error("Pedido no encontrado.");
+    const yaEstabaPagado = prevPedido.estado === "pagado" || prevPedido.pagado_en !== null;
+
     // --- Generate signed URL for listen page (72 hours) ---
     const { data: signedData, error: signErr } = await supabase.storage
       .from("audios")
@@ -55,8 +65,12 @@ serve(async (req) => {
     if (signErr) throw signErr;
 
     // --- Build update fields ---
+    // Si ya estaba pagado: conservar estado='pagado' para que descargar.html funcione.
+    // Si no estaba pagado: pasar a 'completado' (cliente escucha → luego paga).
+    const nuevoEstado = yaEstabaPagado ? "pagado" : "completado";
+
     const updateFields: Record<string, unknown> = {
-      estado:    "completado",
+      estado:    nuevoEstado,
       audio_url: signedData.signedUrl,
       audio_path,
       completado_en: new Date().toISOString(),
@@ -64,28 +78,35 @@ serve(async (req) => {
     if (precio)          updateFields.precio         = precio;
     if (audio_path_2)    updateFields.audio_path_2   = audio_path_2;
     if (nombre_cancion)  updateFields.nombre_cancion = nombre_cancion;
+    // Si ya estaba pagado conservar pagado_en (no pisarlo)
+    if (yaEstabaPagado && prevPedido.pagado_en) {
+      updateFields.pagado_en = prevPedido.pagado_en;
+    }
 
     // --- Update pedido ---
     const { data: pedido, error: updateErr } = await supabase
       .from("pedidos")
       .update(updateFields)
       .eq("id", pedido_id)
-      .select("id, cliente_nombre, cliente_email, cliente_telefono, tipo_tema, mood, token_escucha, precio")
+      .select("id, cliente_nombre, cliente_email, cliente_telefono, tipo_tema, mood, token_escucha, token_descarga, precio")
       .single();
 
     if (updateErr) throw updateErr;
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const fromEmail = Deno.env.get("FROM_EMAIL") || "Poncho Custom Music <noreply@ponchorecords.com.mx>";
-    // FIX: usa ponchorecords.com.mx como default
     const siteUrl   = Deno.env.get("SITE_URL") || "https://ponchorecords.com.mx";
-    // FIX: usa token_escucha (no token_descarga)
-    const listenUrl = `${siteUrl}/escuchar.html?token=${pedido.token_escucha}`;
 
-    // --- WhatsApp al dueño con datos del cliente para reenviar ---
+    const listenUrl   = `${siteUrl}/escuchar.html?token=${pedido.token_escucha}`;
+    const downloadUrl = `${siteUrl}/descargar.html?token=${pedido.token_descarga}`;
+
+    // --- WhatsApp al dueño ---
     const ownerPhone   = Deno.env.get("OWNER_WHATSAPP");
     const callMeBotKey = Deno.env.get("CALLMEBOT_KEY");
     if (ownerPhone && callMeBotKey) {
+      const linkInfo = yaEstabaPagado
+        ? `Link descarga: ${downloadUrl}`
+        : `Link escucha: ${listenUrl}`;
       const waMsg = encodeURIComponent(
         `🎵 Audio listo — Poncho Custom Music\n` +
         `Cliente: ${pedido.cliente_nombre}\n` +
@@ -93,7 +114,7 @@ serve(async (req) => {
         `Cel: ${pedido.cliente_telefono || "—"}\n` +
         `Tipo: ${pedido.tipo_tema}\n` +
         `Precio: $${pedido.precio || "—"} MXN\n` +
-        `Link escucha: ${listenUrl}`
+        `${linkInfo}`
       );
       fetch(
         `https://api.callmebot.com/whatsapp.php?phone=${ownerPhone}&text=${waMsg}&apikey=${callMeBotKey}`
@@ -102,6 +123,45 @@ serve(async (req) => {
 
     // --- Email al cliente ---
     if (resendKey) {
+      let emailHtml: string;
+      let emailSubject: string;
+
+      if (yaEstabaPagado) {
+        // Flujo pago primero: enviar link de DESCARGA directa
+        emailSubject = "⬇️ Tu canción está lista para descargar · Poncho Custom Music";
+        emailHtml = `
+          <div style="background:#020408;color:#e0e0e0;font-family:sans-serif;max-width:560px;margin:0 auto;padding:2rem">
+            <h1 style="color:#00f5ff;font-size:1.2rem;letter-spacing:0.1em">PONCHO CUSTOM MUSIC</h1>
+            <h2 style="color:#39ff14">¡Tu canción ya está lista, ${pedido.cliente_nombre}!</h2>
+            <p>Tu tema de <strong>${pedido.tipo_tema}</strong>${pedido.mood ? ` con mood <strong>${pedido.mood}</strong>` : ''} fue producido y está listo para descargar.</p>
+            <p style="color:#aaa">Como tu pago ya está confirmado, puedes descargar tu canción directamente:</p>
+            <a href="${downloadUrl}" style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;background:transparent;border:1.5px solid #39ff14;color:#39ff14;text-decoration:none;font-family:monospace;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase">
+              ⬇ DESCARGAR MI CANCIÓN
+            </a>
+            <p style="color:#555;font-size:0.75rem">Este link es privado y personal. Válido por 10 días desde la confirmación del pago.</p>
+            <p style="color:#aaa;font-size:0.75rem">Si el botón no funciona, copia este enlace: <br><span style="color:#00f5ff">${downloadUrl}</span></p>
+            <p style="color:#aaa;font-size:0.85rem;margin-top:2rem">Gracias por tu compra. — Poncho Custom Music</p>
+          </div>
+        `;
+      } else {
+        // Flujo clásico: enviar link de ESCUCHA → luego pagar
+        emailSubject = "🎵 Tu canción está lista — Poncho Custom Music";
+        emailHtml = `
+          <div style="background:#020408;color:#e0e0e0;font-family:sans-serif;max-width:560px;margin:0 auto;padding:2rem">
+            <h1 style="color:#00f5ff;font-size:1.2rem;letter-spacing:0.1em">PONCHO CUSTOM MUSIC</h1>
+            <h2 style="color:#fff">¡Tu canción está lista, ${pedido.cliente_nombre}!</h2>
+            <p>Tu tema de <strong>${pedido.tipo_tema}</strong>${pedido.mood ? ` con mood <strong>${pedido.mood}</strong>` : ''} ya está listo para escuchar.</p>
+            <p style="color:#aaa">Haz clic abajo para escucharla. Cuando confirmes el pago por WhatsApp, activamos tu descarga.</p>
+            <a href="${listenUrl}" style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;background:transparent;border:1.5px solid #00f5ff;color:#00f5ff;text-decoration:none;font-family:monospace;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase">
+              ▶ ESCUCHAR MI CANCIÓN
+            </a>
+            <p style="color:#aaa;font-size:0.8rem">Precio: <strong>$${pedido.precio || "—"} MXN</strong></p>
+            <p style="color:#555;font-size:0.75rem">Este link es privado y personal. No lo compartas.</p>
+            <p style="color:#aaa;font-size:0.85rem;margin-top:2rem">— Poncho Custom Music</p>
+          </div>
+        `;
+      }
+
       await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -111,27 +171,14 @@ serve(async (req) => {
         body: JSON.stringify({
           from: fromEmail,
           to: pedido.cliente_email,
-          subject: "🎵 Tu canción está lista — Poncho Custom Music",
-          html: `
-            <div style="background:#020408;color:#e0e0e0;font-family:sans-serif;max-width:560px;margin:0 auto;padding:2rem">
-              <h1 style="color:#00f5ff;font-size:1.2rem;letter-spacing:0.1em">PONCHO CUSTOM MUSIC</h1>
-              <h2 style="color:#fff">¡Tu canción está lista, ${pedido.cliente_nombre}!</h2>
-              <p>Tu tema de <strong>${pedido.tipo_tema}</strong>${pedido.mood ? ` con mood <strong>${pedido.mood}</strong>` : ''} ya está listo para escuchar.</p>
-              <p style="color:#aaa">Haz clic abajo para escucharla. Cuando confirmes el pago por WhatsApp, activamos tu descarga.</p>
-              <a href="${listenUrl}" style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;background:transparent;border:1.5px solid #00f5ff;color:#00f5ff;text-decoration:none;font-family:monospace;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase">
-                ▶ ESCUCHAR MI CANCIÓN
-              </a>
-              <p style="color:#aaa;font-size:0.8rem">Precio: <strong>$${pedido.precio || "—"} MXN</strong></p>
-              <p style="color:#555;font-size:0.75rem">Este link es privado y personal. No lo compartas.</p>
-              <p style="color:#aaa;font-size:0.85rem;margin-top:2rem">— Poncho Custom Music</p>
-            </div>
-          `,
+          subject: emailSubject,
+          html: emailHtml,
         }),
       }).catch(console.error);
     }
 
     return new Response(
-      JSON.stringify({ success: true, pedido_id: pedido.id }),
+      JSON.stringify({ success: true, pedido_id: pedido.id, flujo: yaEstabaPagado ? "pago-primero" : "audio-primero" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
