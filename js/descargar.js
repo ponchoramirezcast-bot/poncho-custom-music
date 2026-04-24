@@ -78,7 +78,7 @@ async function loadPage() {
   try {
     const { data, error } = await sb
       .from('pedidos')
-      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion, pagado_en, version_elegida')
+      .select('id, cliente_nombre, tipo_tema, mood, estado, token_descarga, nombre_cancion, pagado_en, version_elegida, audio_path')
       .eq('token_descarga', token)
       .single();
 
@@ -93,8 +93,24 @@ async function loadPage() {
       return;
     }
 
-    // FIX: descarga disponible cuando estado='pagado'
-    if (data.estado !== 'pagado') {
+    // FLUJO DEFINITIVO: pendiente → pagado → completado
+    // Sin pago confirmado → bloquear
+    if (!data.pagado_en) {
+      card.classList.add('blocked-card');
+      content.innerHTML = `
+        <div class="download-icon">💳</div>
+        <div class="download-title" style="color:var(--neon-yellow)">Pago pendiente</div>
+        <p class="download-sub">Aún no hemos recibido tu pago. Una vez confirmado, te enviaremos el link de descarga por correo y WhatsApp.</p>
+        <div class="download-actions">
+          <a href="https://wa.me/5214497573058" target="_blank" class="btn-primary">📲 Contactar a Poncho</a>
+          <a href="index.html" class="btn-ghost">← Volver al inicio</a>
+        </div>
+      `;
+      return;
+    }
+
+    // Pagado pero audio aún en producción
+    if (data.estado !== 'completado') {
       card.classList.add('blocked-card');
       content.innerHTML = `
         <div class="download-icon">🎛️</div>
