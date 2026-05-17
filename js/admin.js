@@ -9,6 +9,23 @@ let currentTab = 'all';
 let uploadPedidoId = null;
 let isReplaceMode  = false;  // true = reemplazar audio sin renotificar
 
+/**
+ * Normaliza un número de teléfono a formato E.164 para wa.me
+ * Reglas:
+ *  - 10 dígitos              → asume México (+52)
+ *  - 11 dígitos, empieza con 1 → USA/Canada (+1), ya correcto
+ *  - 11 dígitos, empieza con 52 → México con código, ya correcto
+ *  - 12+ dígitos             → ya trae código de país, usar tal cual
+ */
+function normalizeWaPhone(raw) {
+  if (!raw) return '';
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 10) return `52${digits}`;          // México sin prefijo
+  if (digits.length === 11 && digits.startsWith('1')) return digits;  // USA/Canada
+  return digits;  // ya incluye código o formato desconocido → usar tal cual
+}
+
 /* ---- Auth ------------------------------------------------ */
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
@@ -623,8 +640,7 @@ async function loadClientes() {
     }
 
     tbody.innerHTML = data.map((p, i) => {
-      const digits  = (p.cliente_telefono || '').replace(/\D/g, '');
-      const waPhone = digits.length === 10 ? `52${digits}` : digits;
+      const waPhone = normalizeWaPhone(p.cliente_telefono);
       const promoMsg = encodeURIComponent(
         `¡Hola ${p.cliente_nombre}! 🎵 Tenemos nuevas canciones personalizadas disponibles en Poncho Custom Music. ¿Te interesa otra? Aquí puedes ver los demos: https://ponchorecords.com.mx/demos.html`
       );
@@ -711,8 +727,7 @@ async function reenviarLink(pedidoId) {
     const listenUrl = `${siteUrl}/escuchar.html?token=${newToken}`;
 
     if (p.cliente_telefono) {
-      const digits     = p.cliente_telefono.replace(/\D/g, '');
-      const waPhone    = digits.length === 10 ? `52${digits}` : digits;
+      const waPhone    = normalizeWaPhone(p.cliente_telefono);
       const clientMsg  = encodeURIComponent(
         `¡Hola ${p.cliente_nombre}! 🎵 Te reenvío el link de tu canción personalizada.\n\n` +
         `Escúchala aquí:\n${listenUrl}\n\n¿Tienes alguna duda? Con gusto te ayudo.`

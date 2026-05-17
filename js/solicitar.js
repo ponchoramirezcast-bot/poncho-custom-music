@@ -43,7 +43,9 @@ function validateStep1() {
   const email    = document.getElementById('email').value.trim();
   const telefono = document.getElementById('telefono').value.trim();
   const emailRe  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const telRe    = /^\+?[\d\s\-]{10,15}$/;
+  // Acepta formato internacional: +52 4491234567, +1 5551234567, etc.
+  // Mínimo 10 dígitos numéricos después de quitar espacios, guiones y +
+  const telRe    = /^\+?[\d\s\-]{10,20}$/;
   let ok = true;
 
   // Nombre: obligatorio
